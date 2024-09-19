@@ -16,20 +16,12 @@ import java.sql.Timestamp;
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+        private int BankaccountID;
 
         @ManyToOne
         @JoinColumn(name = "user_id", nullable = false)
         private User user;
 
-        @Column(precision = 15, scale = 2)
         private BigDecimal balance;
-
-        @Column(name = "account_number", length = 20)
-        private String accountNumber;
-
-        @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-        private Timestamp createdAt;
-
 
     }

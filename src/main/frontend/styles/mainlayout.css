@@ -1,0 +1,80 @@
+.vaadin-vertical-layout {
+    width: 240px;
+    height: 100%;
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.buttons {
+    margin: 10%;
+    text-align: center;
+}
+
+.btn-hover {
+    display: inline-block;
+    width: 200px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 15px;
+    height: 55px;
+    padding: 10px 20px;
+    text-align: center;
+    border: none;
+    background-size: 300% 100%;
+
+    border-radius: 50px;
+    moz-transition: all .4s ease-in-out;
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+
+    justify-content: center;
+    text-decoration: none;
+}
+
+.btn-hover:hover {
+    background-position: 100% 0;
+    moz-transition: all .4s ease-in-out;
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+}
+
+.btn-hover:focus {
+    outline: none;
+}
+
+.btn-hover.color-5 {
+    background-image: linear-gradient(to right, #0ba360, #3cba92, #30dd8a, #2bb673);
+    box-shadow: 0 4px 15px 0 rgba(23, 168, 108, 0.75);
+}
+
+.History {
+    text-align: center;
+    text-decoration: none;
+}
+
+.Profile {
+    text-align: center;
+    text-decoration: none;
+    margin-top: 20%;
+}
+
+.Notifications {
+    text-decoration: none;
+}
+
+.logo {
+    margin-top: 10%;
+}
+
+.header {
+    font-size : 30px;
+
+}

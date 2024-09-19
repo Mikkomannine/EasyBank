@@ -7,6 +7,10 @@ import com.example.easybankproject.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +21,7 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
 
     private final JwtUtil jwtUtil;
 
@@ -42,15 +47,26 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username already exists.");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword())); // Hash the password
+        user.setEmail(user.getEmail());
+        user.setFirstname(user.getFirstname());
+        user.setLastname(user.getLastname());
+        user.setAddress(user.getAddress());
+        user.setPhonenumber(user.getPhonenumber());
+
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(String.valueOf(user.getUsername()));
         return ResponseEntity.ok(token);
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(@RequestBody User user) {
-        String token = jwtUtil.generateToken(user.getUsername());
+        User existingUser = userRepository.findByUsername(user.getUsername());
+        if (existingUser == null || !passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+        }
+
+        String token = jwtUtil.generateToken(String.valueOf(user.getUsername()));
         return ResponseEntity.ok(token);
     }
 }

@@ -1,32 +1,36 @@
-package com.example.easybankproject.models;/*package com.example.vaadindemo.models;
-
+package com.example.easybankproject.models;
+/*
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity
+@Setter
+@Getter
+@Table(name = "payments")
 public class Payment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer paymentID;
+    private Long paymentId;
 
     @Column(nullable = false)
-    private Integer amount;
+    private Long senderAccountId;
 
     @Column(nullable = false)
-    private Integer senderID;
+    private Long receiverAccountId;
 
     @Column(nullable = false)
-    private Integer receiverID;
+    private Double amount;
 
     @Column(nullable = false)
+    private LocalDateTime timestamp;
+
     private String message;
 
-    @Column(nullable = false)
-    private Integer timestamp;
-
-    @ManyToOne
-    @JoinColumn(name = "accountID", nullable = false)
-    private BankAccount bankAccount;
-
-    // Getters and setters...
-}
-*/
+    @PrePersist
+    public void prePersist() {
+        this.timestamp = LocalDateTime.now(); // Automatically set timestamp before saving
+    }
+}*/

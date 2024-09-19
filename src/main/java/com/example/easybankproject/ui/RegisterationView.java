@@ -2,8 +2,8 @@ package com.example.easybankproject.ui;
 
 
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
@@ -17,79 +17,89 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
+
 @PageTitle("Registeration")
-@Route(value = "")
+@Route(value = "register")
 @RouteAlias(value = "")
 public class RegisterationView extends Composite<VerticalLayout> {
     private final RestTemplate restTemplate;
     public RegisterationView() {
         this.restTemplate = new RestTemplate();
-        VerticalLayout layoutColumn2 = new VerticalLayout();
+
+        TextField username = new TextField("Username");
+        TextField firstname = new TextField("First Name");
+        TextField lastname = new TextField("Last Name");
+        EmailField emailField = new EmailField("Email");
+        TextField phonenumber = new TextField("Phone Number");
+        TextField address = new TextField("Address");
+        PasswordField passwordField = new PasswordField("Password");
+
         HorizontalLayout layoutRow = new HorizontalLayout();
-        Image image = new Image("easybank_logo.jpg", "Description of image"); // Replace with your image path
-        H2 h2 = new H2();
-        TextField firstname = new TextField();
-        TextField textField2 = new TextField();
-        EmailField emailField = new EmailField();
-        PasswordField passwordField = new PasswordField();
-        Button registerButton = new Button("Register", event -> registerUser(firstname.getValue(), passwordField.getValue(), emailField.getValue()));
-        getContent().setWidth("100%");
-        getContent().setHeight("800px");
-        getContent().setJustifyContentMode(JustifyContentMode.START);
+        VerticalLayout layoutColumn = new VerticalLayout();
+        VerticalLayout main= new VerticalLayout();
+        main.setWidth("100%");
+        main.setHeight("800px");
+        main.setJustifyContentMode(JustifyContentMode.START);
+        main.setAlignItems(Alignment.CENTER);
         getContent().setAlignItems(Alignment.CENTER);
-        layoutColumn2.setWidthFull();
-        getContent().setFlexGrow(1.0, layoutColumn2);
-        layoutColumn2.setWidth("700px");
-        layoutColumn2.getStyle().set("flex-grow", "1");
-        layoutColumn2.setJustifyContentMode(JustifyContentMode.CENTER);
-        layoutColumn2.setAlignItems(Alignment.CENTER);
+
         layoutRow.setWidthFull();
-        layoutColumn2.setFlexGrow(1.0, layoutRow);
-        layoutRow.addClassName(Gap.XLARGE);
-        layoutRow.addClassName(Padding.XLARGE);
+        layoutRow.addClassName(LumoUtility.Gap.XLARGE);
+        layoutRow.addClassName(LumoUtility.Padding.XLARGE);
         layoutRow.setWidth("1100px");
         layoutRow.getStyle().set("flex-grow", "1");
         layoutRow.setAlignItems(Alignment.CENTER);
         layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
-        image.setWidth("50px"); // Set the desired width
-        image.setHeight("50px"); // Set the desired height
+
+        layoutColumn.setWidthFull();
+        layoutColumn.setFlexGrow(1.0, layoutRow);
+        layoutColumn.setJustifyContentMode(JustifyContentMode.CENTER);
+        layoutColumn.setAlignItems(Alignment.CENTER);
+        layoutColumn.getStyle().set("border-radius", "10px");
+        layoutColumn.getStyle().set("margin-bottom", "20px");
+
+
+        H2 h2 = new H2();
         h2.setText("Your Easy Path To Financial Freedom .");
         h2.setWidth("max-content");
-        firstname.setLabel("Firstname");
-        firstname.setWidth("min-content");
-        textField2.setLabel("Lastname");
-        textField2.setWidth("min-content");
-        emailField.setLabel("Email");
-        emailField.setWidth("min-content");
-        passwordField.setLabel("Password field");
-        passwordField.setWidth("min-content");
-        registerButton.setText("Register");
-        registerButton.setWidth("min-content");
-        registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        getContent().add(layoutColumn2);
-        layoutColumn2.add(layoutRow);
-        layoutRow.add(image);
-        layoutRow.add(h2);
-        layoutColumn2.add(firstname);
-        layoutColumn2.add(textField2);
-        layoutColumn2.add(emailField);
-        layoutColumn2.add(passwordField);
-        layoutColumn2.add(registerButton);
+
+        Button registerButton = new Button("Register", event -> registerUser(username.getValue() , passwordField.getValue(), emailField.getValue(), firstname.getValue(), lastname.getValue(), phonenumber.getValue(), address.getValue()));
+        RouterLink loginLink = new RouterLink("Already have an account? Login here.", LoginView.class);
+
+        Image logo = new Image("images/easybank_logo.jpg", "Company Logo");
+        logo.setHeight("200px");
+        logo.setWidth("200px");
+
+        registerButton.getStyle().set("background-color", "hsl(99, 86%, 64%)");
+        registerButton.getStyle().set("color", "white");
+        ;
+        // Set layout size
+        getContent().setSizeFull();
+
+        layoutRow.add(logo, h2);
+        layoutColumn.add(username, firstname, lastname, emailField, phonenumber, address, passwordField, registerButton, loginLink);
+        layoutColumn.getStyle().set("border-radius", "10px");
+        layoutColumn.getStyle().set("box-shadow", "0 0 10px hsl(99, 86%, 64%)");
+        layoutColumn.setWidth("400px");
+
+        main.add(layoutRow, layoutColumn);
+        getContent().add(main);
+
     }
-    private void registerUser(String username, String password, String email) {
+    private void registerUser(String username, String password, String email, String firstname, String lastname, String phonenumber, String address) {
         String url = "http://localhost:8080/api/user/register";
 
         // Create a new user JSON object
-        String jsonPayload = String.format("{\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
-                username, email, password);
+        String jsonPayload = String.format("{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"firstname\":\"%s\",\"lastname\":\"%s\",\"phonenumber\":\"%s\",\"address\":\"%s\"}",
+                username, password, email, firstname, lastname, phonenumber, address);
 
         // Set up the headers
         HttpHeaders headers = new HttpHeaders();
@@ -100,12 +110,17 @@ public class RegisterationView extends Composite<VerticalLayout> {
 
         // Make the POST request
         try {
+            if (username.isEmpty() || password.isEmpty()) {
+                Notification.show("Please fill in all fields");
+                return;
+            }
+            System.out.println(jsonPayload);
             String token = restTemplate.postForObject(url, request, String.class);
             Notification.show(token);
-            // Store the token in Vaadin session
-            VaadinSession.getCurrent().setAttribute("jwtToken", token);
 
-            // Navigate to MainView
+            VaadinSession.getCurrent().setAttribute("token", token);
+            VaadinSession.getCurrent().setAttribute("username", username);
+
             getUI().ifPresent(ui -> ui.navigate("main"));
 
         } catch (Exception e) {
