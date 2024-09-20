@@ -1,9 +1,12 @@
 package com.example.easybankproject.controllers;
 
 
+import com.example.easybankproject.db.BankAccountRepository;
 import com.example.easybankproject.db.UserRepository;
+import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.User;
 import com.example.easybankproject.utils.JwtUtil;
+import org.atmosphere.config.service.Get;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 
 @RestController
 @RequestMapping("/api/user")
@@ -22,14 +27,15 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-
+    private final BankAccountRepository bankAccountRepository;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, BankAccountRepository bankAccountRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.bankAccountRepository = bankAccountRepository;
     }
 
     @PostMapping("/me")
@@ -52,8 +58,12 @@ public class UserController {
         user.setLastname(user.getLastname());
         user.setAddress(user.getAddress());
         user.setPhonenumber(user.getPhonenumber());
-
         userRepository.save(user);
+
+        BankAccount bankAccount = new BankAccount();
+        bankAccount.setUser(user);
+        bankAccount.setBalance(BigDecimal.ZERO); // Set initial balance to zero or any other default value
+        bankAccountRepository.save(bankAccount);
 
         String token = jwtUtil.generateToken(String.valueOf(user.getUsername()));
         return ResponseEntity.ok(token);

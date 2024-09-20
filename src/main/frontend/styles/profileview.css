@@ -1,0 +1,15 @@
+/* src/main/resources/META-INF/resources/frontend/styles/styles.css */
+.centered-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.centered-column div {
+    margin: 10px 0;
+}

@@ -40,7 +40,7 @@ public class MainLayout extends AppLayout {
         drawerLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         addToDrawer(drawerLayout);
 
-        Image logo = new Image("./images/easybank_logo.jpg", "logo");
+        Image logo = new Image("./images/easybank_logo-1__1_-removebg-preview.png", "logo");
         logo.setWidth("180x");
         logo.setHeight("200px");
         drawerLayout.add(logo);
@@ -49,7 +49,7 @@ public class MainLayout extends AppLayout {
         profileLayout.setWidth("40px");
         profileLayout.setHeight("80px");
         profileLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        RouterLink profileLink = new RouterLink("main", MainView.class);
+        RouterLink profileLink = new RouterLink("MyProfile", ProfileView.class);
         profileLink.addClassNames("btn-hover", "color-5");
         profileLayout.add(profileLink);
 

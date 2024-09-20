@@ -1,6 +1,8 @@
 package com.example.easybankproject.ui;
 
+import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.utils.JwtUtil;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -8,8 +10,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.component.button.Button;
-
-
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H2;
@@ -21,6 +21,9 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -31,10 +34,15 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     private final JwtUtil jwtUtil;
 
+    private final Paragraph balanceParagraph;
+
 
     public MainView(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
         this.restTemplate = new RestTemplate();
+        this.balanceParagraph = new Paragraph();
+        fetchBalance();
+
         HorizontalLayout layoutRow = new HorizontalLayout();
         VerticalLayout layoutColumn2 = new VerticalLayout();
         VerticalLayout layoutColumn3 = new VerticalLayout();
@@ -45,6 +53,8 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         Tabs tabs = new Tabs();
         HorizontalLayout layoutRow2 = new HorizontalLayout();
         Button createaccount = new Button("Create Account", event -> createButton());
+        balanceParagraph.getStyle().set("font-size", "var(--lumo-font-size-xxl)");
+        balanceParagraph.getStyle().set("left", "100");
 
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
@@ -57,11 +67,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         layoutColumn2.setJustifyContentMode(JustifyContentMode.START);
         layoutColumn2.setAlignItems(Alignment.CENTER);
 
-        layoutColumn3.addClassName(Padding.XLARGE);
-        layoutColumn3.getStyle().set("flex-grow", "1");
         layoutColumn3.setHeight("100%");
-        layoutColumn3.setJustifyContentMode(JustifyContentMode.START);
-        layoutColumn3.setAlignItems(Alignment.CENTER);
         textLarge.setText("Total Balance:");
         textLarge.setWidth("100%");
         textLarge.getStyle().set("font-size", "var(--lumo-font-size-xl)");
@@ -89,6 +95,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         layoutRow.add(layoutColumn2);
         layoutRow.add(layoutColumn3);
         layoutColumn3.add(textLarge);
+        layoutColumn3.add(balanceParagraph);
         layoutColumn3.add(buttonPrimary4);
         layoutColumn3.add(createaccount);
         layoutColumn3.add(h2);
@@ -110,10 +117,34 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     }
 
-    private void createButton() {
-    getUI().ifPresent(ui -> ui.navigate("bankaccount"));
+    private void fetchBalance() {
+        String url = "http://localhost:8080/api/bankaccount/balance";
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+
+        if (token == null) {
+            getContent().add(new Div("Unauthorized: No token found in session."));
+            return;
+        }
+
+        // Set up headers with the JWT token
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        try {
+            BankAccount bankAccount = restTemplate.exchange(url, HttpMethod.GET, request, BankAccount.class).getBody();
+            balanceParagraph.setText("" + bankAccount.getBalance());
+        } catch (Exception e) {
+            Notification.show("Error: " + e.getMessage());
+        }
+    }
+
+private void createButton() {
+    getUI().ifPresent(ui -> ui.navigate("create-bank-account"));
 }
 private void paymentButton() {
         getUI().ifPresent(ui -> ui.navigate("payment"));
     }
 }
+//f821bd5197bc45ca831021e8753eac5b

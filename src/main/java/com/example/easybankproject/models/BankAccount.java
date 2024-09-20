@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private int BankaccountID;
+        private int bank_account_id;
 
         @ManyToOne
         @JoinColumn(name = "user_id", nullable = false)
