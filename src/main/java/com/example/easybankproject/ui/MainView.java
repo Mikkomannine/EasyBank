@@ -3,9 +3,11 @@ package com.example.easybankproject.ui;
 import com.example.easybankproject.db.BankAccountRepository;
 import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
+import com.example.easybankproject.models.Transaction;
 import com.example.easybankproject.utils.JwtUtil;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -27,7 +29,12 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import org.springframework.http.*;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @PageTitle("Main")
 @Route(value = "main", layout = MainLayout.class)
@@ -40,9 +47,10 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     private final BankAccountRepository bankAccountRepository;
     private final UserRepository userRepository;
-
+    private final Grid<Transaction> transactionGrid;
     public MainView(JwtUtil jwtUtil, BankAccountRepository bankAccountRepository, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.transactionGrid = new Grid<>(Transaction.class);
         this.restTemplate = new RestTemplate();
         this.balanceParagraph = new Paragraph();
         this.bankAccountRepository = bankAccountRepository;
@@ -99,7 +107,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         layoutRow.add(layoutColumn3);
         layoutColumn3.add(textLarge);
         layoutColumn3.add(balanceParagraph);
-        layoutColumn3.add(buttonPrimary4);
+        layoutColumn3.add(buttonPrimary4, transactionGrid);
         layoutColumn3.add(h2);
         layoutColumn3.add(tabs);
         getContent().add(layoutRow2);
@@ -117,6 +125,36 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             event.rerouteTo(LoginView.class);
         }
         fetchBalance();
+        fetchTransactions();
+    }
+
+
+    private void fetchTransactions() {
+        try {
+            // Get JWT Token from session or any other storage
+            String token = (String) VaadinSession.getCurrent().getAttribute("token");
+
+            // Set up the headers for the request, including the JWT token
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<Transaction[]> response = restTemplate.exchange(
+                    "http://localhost:8080/api/transaction/history",  // Replace with your backend endpoint
+                    HttpMethod.GET,
+                    entity,
+                    Transaction[].class
+            );
+
+            List<Transaction> transactions = Arrays.asList(response.getBody());
+
+            // Populate the grid with transaction data
+            transactionGrid.setItems(transactions);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notification.show("Failed to fetch transactions", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void fetchBalance() {
@@ -171,7 +209,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
        System.out.println("Sender ID: " + senderID);
 
 
-       String jsonPayload = String.format("{\"amount\":\"%s\",\"receiver_account_id\":\"%s\",\"message\":\"%s\",\"sender_account_id\":\"%s\"}",
+       String jsonPayload = String.format("{\"amount\":\"%s\",\"receiverAccountId\":\"%s\",\"message\":\"%s\",\"senderAccountId\":\"%s\"}",
                amount, receiver, message, senderID);
        System.out.println("TransactionInfo: " + jsonPayload);
 

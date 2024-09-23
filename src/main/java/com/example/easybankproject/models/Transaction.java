@@ -13,9 +13,15 @@ public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int transaction_id;
-    private int sender_account_id;
-    private int receiver_account_id;
+    @Column(name = "transaction_id")
+    private int transactionId;
+
+    @Column(name = "receiver_account_id")
+    private int receiverAccountId;
+
+    @Column(name = "sender_account_id")
+    private int senderAccountId;
+
     private double amount;
     private LocalDateTime timestamp;
     private String message;
