@@ -81,7 +81,6 @@ public class RegisterationView extends Composite<VerticalLayout> {
         registerButton.getStyle().set("background-color", "hsl(99, 86%, 64%)");
         registerButton.getStyle().set("color", "white");
         ;
-        // Set layout size
         getContent().setSizeFull();
 
         layoutRow.add(logo, h2);
@@ -97,18 +96,14 @@ public class RegisterationView extends Composite<VerticalLayout> {
     private void registerUser(String username, String password, String email, String firstname, String lastname, String phonenumber, String address) {
         String url = "http://localhost:8080/api/user/register";
 
-        // Create a new user JSON object
         String jsonPayload = String.format("{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"firstname\":\"%s\",\"lastname\":\"%s\",\"phonenumber\":\"%s\",\"address\":\"%s\"}",
                 username, password, email, firstname, lastname, phonenumber, address);
 
-        // Set up the headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Create the HTTP entity with the JSON payload and headers
         HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
 
-        // Make the POST request
         try {
             if (username.isEmpty() || password.isEmpty()) {
                 Notification.show("Please fill in all fields");

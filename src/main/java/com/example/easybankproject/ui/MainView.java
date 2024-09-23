@@ -1,10 +1,16 @@
 package com.example.easybankproject.ui;
 
+import com.example.easybankproject.db.BankAccountRepository;
+import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.utils.JwtUtil;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
@@ -20,12 +26,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
-
 
 @PageTitle("Main")
 @Route(value = "main", layout = MainLayout.class)
@@ -36,23 +38,26 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     private final Paragraph balanceParagraph;
 
+    private final BankAccountRepository bankAccountRepository;
+    private final UserRepository userRepository;
 
-    public MainView(JwtUtil jwtUtil) {
+    public MainView(JwtUtil jwtUtil, BankAccountRepository bankAccountRepository, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
         this.restTemplate = new RestTemplate();
         this.balanceParagraph = new Paragraph();
-        fetchBalance();
+        this.bankAccountRepository = bankAccountRepository;
+        this.userRepository = userRepository;
+
 
         HorizontalLayout layoutRow = new HorizontalLayout();
         VerticalLayout layoutColumn2 = new VerticalLayout();
         VerticalLayout layoutColumn3 = new VerticalLayout();
         Paragraph textLarge = new Paragraph();
 
-        Button buttonPrimary4 = new Button("+ New Payment", event -> paymentButton());
+        Button buttonPrimary4 = new Button("+ New Transaction", event -> openTransactionDialog());
         H2 h2 = new H2();
         Tabs tabs = new Tabs();
         HorizontalLayout layoutRow2 = new HorizontalLayout();
-        Button createaccount = new Button("Create Account", event -> createButton());
         balanceParagraph.getStyle().set("font-size", "var(--lumo-font-size-xxl)");
         balanceParagraph.getStyle().set("left", "100");
 
@@ -87,9 +92,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         layoutRow2.setHeight("min-content");
 
         buttonPrimary4.getStyle().set("background-color", "hsl(99, 86%, 64%)");
-        createaccount.getStyle().set("color", "hsl(99, 86%, 64%)");
         tabs.getStyle().set("color", "hsl(99, 86%, 64%)");
-
 
         getContent().add(layoutRow);
         layoutRow.add(layoutColumn2);
@@ -97,7 +100,6 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         layoutColumn3.add(textLarge);
         layoutColumn3.add(balanceParagraph);
         layoutColumn3.add(buttonPrimary4);
-        layoutColumn3.add(createaccount);
         layoutColumn3.add(h2);
         layoutColumn3.add(tabs);
         getContent().add(layoutRow2);
@@ -106,7 +108,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        // Check if token exists in Vaadin session
+
         String token = (String) VaadinSession.getCurrent().getAttribute("token");
         String username = (String) VaadinSession.getCurrent().getAttribute("username");
 
@@ -114,7 +116,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             Notification.show("Please log in.");
             event.rerouteTo(LoginView.class);
         }
-
+        fetchBalance();
     }
 
     private void fetchBalance() {
@@ -126,7 +128,6 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             return;
         }
 
-        // Set up headers with the JWT token
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
 
@@ -140,11 +141,52 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         }
     }
 
-private void createButton() {
-    getUI().ifPresent(ui -> ui.navigate("create-bank-account"));
-}
-private void paymentButton() {
-        getUI().ifPresent(ui -> ui.navigate("payment"));
+    private void openTransactionDialog() {
+        Dialog dialog = new Dialog();
+        FormLayout formLayout = new FormLayout();
+
+        NumberField amountField = new NumberField("Amount");
+        TextField receiverField = new TextField("Receiver Account ID");
+        TextField messageField = new TextField("Message");
+
+        Button submitButton = new Button("Submit", event -> {
+            double amount = amountField.getValue();
+            int receiver = Integer.parseInt(receiverField.getValue());
+            String message = messageField.getValue();
+            transaction(amount, receiver, message);
+            dialog.close();
+        });
+
+        formLayout.add(amountField, receiverField, messageField, submitButton);
+        dialog.add(formLayout);
+        dialog.open();
     }
-}
-//f821bd5197bc45ca831021e8753eac5b
+   private void transaction(double amount, int receiver, String message) {
+
+       String url = "http://localhost:8080/api/transaction/create";
+       String username = (String) VaadinSession.getCurrent().getAttribute("username");
+       BankAccount sender = bankAccountRepository.findByUser(userRepository.findByUsername(username)).orElseThrow(() -> new RuntimeException("User not found"));
+       int senderID = sender.getBankAccountId();
+       System.out.println("Sender Account: " + sender);
+       System.out.println("Sender ID: " + senderID);
+
+
+       String jsonPayload = String.format("{\"amount\":\"%s\",\"receiver_account_id\":\"%s\",\"message\":\"%s\",\"sender_account_id\":\"%s\"}",
+               amount, receiver, message, senderID);
+       System.out.println("TransactionInfo: " + jsonPayload);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
+
+            // Make the POST request
+            try {
+                String transaction = restTemplate.postForObject(url, request, String.class);
+                Notification.show("transaction successful: " + transaction);
+
+            } catch (Exception e) {
+                Notification.show("Error: " + e.getMessage());
+            }
+        }
+    }

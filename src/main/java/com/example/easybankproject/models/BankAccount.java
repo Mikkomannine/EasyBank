@@ -16,11 +16,13 @@ import java.sql.Timestamp;
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private int bank_account_id;
+        @Column(name = "bank_account_id")
+        private int bankAccountId;
 
         @ManyToOne
         @JoinColumn(name = "user_id", nullable = false)
         private User user;
+
 
         private BigDecimal balance;
 

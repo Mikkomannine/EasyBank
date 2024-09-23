@@ -12,6 +12,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 @PageTitle("Profile")
@@ -44,7 +45,7 @@ public class ProfileView extends Composite<VerticalLayout> {
         HttpEntity<String> request = new HttpEntity<>(headers);
 
         try {
-            User user = restTemplate.postForObject(url, request, User.class);
+            User user = restTemplate.exchange(url, HttpMethod.GET, request, User.class).getBody();
 
             if (user != null) {
                 getContent().add(new Div("Username: " + user.getUsername()));

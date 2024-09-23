@@ -38,7 +38,7 @@ public class UserController {
         this.bankAccountRepository = bankAccountRepository;
     }
 
-    @PostMapping("/me")
+    @GetMapping("/me")
     public ResponseEntity<User> getUserData(@RequestHeader("Authorization") String token) {
         String jwtToken = token.substring(7); // Remove "Bearer " prefix
         String username = jwtUtil.extractUsername(jwtToken);
@@ -62,7 +62,7 @@ public class UserController {
 
         BankAccount bankAccount = new BankAccount();
         bankAccount.setUser(user);
-        bankAccount.setBalance(BigDecimal.ZERO); // Set initial balance to zero or any other default value
+        bankAccount.setBalance(BigDecimal.TEN);
         bankAccountRepository.save(bankAccount);
 
         String token = jwtUtil.generateToken(String.valueOf(user.getUsername()));

@@ -18,7 +18,6 @@ import org.springframework.web.client.RestTemplate;
 
 
 @Route("login")
-//@CssImport("./login-view.css") // Import the CSS file
 public class LoginView extends VerticalLayout {
 
     private final RestTemplate restTemplate;
@@ -85,7 +84,6 @@ public class LoginView extends VerticalLayout {
 
     }
 
-    // src/main/java/com/example/easybankproject/ui/LoginView.java
     private void loginUser(String username, String password) {
         String url = "http://localhost:8080/api/user/login";
         HttpHeaders headers = new HttpHeaders();
@@ -119,34 +117,4 @@ public class LoginView extends VerticalLayout {
             Notification.show("Error: " + e.getMessage());
         }
     }
-
-/*
-    private void loginUser(String username, String password) {
-        String url = "http://localhost:8080/api/user/login";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        String jsonPayload = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
-        HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-            System.out.println("Response: " + response);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                String token = response.getBody();
-
-                // Store the JWT token in Vaadin session
-                VaadinSession.getCurrent().setAttribute("token", token);
-                VaadinSession.getCurrent().setAttribute("username", username);
-                System.out.println("Token set in session: " + VaadinSession.getCurrent().getAttribute("token"));
-                System.out.println("Username set in session: " + username);
-                Notification.show("Login successful!");
-                getUI().ifPresent(ui -> ui.navigate("main")); // Navigate to dashboard after login
-            } else {
-                Notification.show("Login failed. Please check your username and password.");
-            }
-
-        } catch (Exception e) {
-            Notification.show("Error: " + e.getMessage());
-        }
-    }*/
 }
