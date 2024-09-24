@@ -65,7 +65,7 @@ public class MainLayout extends AppLayout {
         historyLayout.setWidth("40px");
         historyLayout.setHeight("80px");
         historyLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        RouterLink historyLink = new RouterLink("main", MainView.class);
+        RouterLink historyLink = new RouterLink("Home", MainView.class);
         historyLink.addClassNames("btn-hover", "color-5");
         historyLayout.add(historyLink);
 

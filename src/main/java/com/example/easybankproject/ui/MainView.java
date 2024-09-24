@@ -9,13 +9,16 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.Composite;
@@ -30,8 +33,10 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import org.springframework.http.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +45,8 @@ import java.util.List;
 @Route(value = "main", layout = MainLayout.class)
 public class MainView extends Composite<VerticalLayout> implements BeforeEnterObserver {
     private final RestTemplate restTemplate;
+
+    private Grid<com.example.easybankproject.models.Notification> grid = new Grid<>(com.example.easybankproject.models.Notification.class);
 
     private final JwtUtil jwtUtil;
 
@@ -89,7 +96,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         layoutColumn3.setAlignSelf(Alignment.START, buttonPrimary4);
         buttonPrimary4.setWidth("min-content");
         buttonPrimary4.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        h2.setText("My Accounts:");
+        h2.setText("Transaction History:");
         layoutColumn3.setAlignSelf(Alignment.START, h2);
         h2.setWidth("max-content");
         tabs.setWidth("100%");
@@ -107,11 +114,16 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         layoutRow.add(layoutColumn3);
         layoutColumn3.add(textLarge);
         layoutColumn3.add(balanceParagraph);
-        layoutColumn3.add(buttonPrimary4, transactionGrid);
-        layoutColumn3.add(h2);
+        layoutColumn3.add(buttonPrimary4, h2, transactionGrid, grid);
         layoutColumn3.add(tabs);
         getContent().add(layoutRow2);
 
+    }
+
+    private int getBankAccountIdFromToken(String token) {
+        // Implement logic to extract bank account ID from the token
+        // This is a placeholder implementation
+        return 123; // Replace with actual logic
     }
 
     @Override
@@ -126,8 +138,8 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         }
         fetchBalance();
         fetchTransactions();
+        fetchNotifications();
     }
-
 
     private void fetchTransactions() {
         try {
@@ -146,14 +158,18 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
                     Transaction[].class
             );
 
-            List<Transaction> transactions = Arrays.asList(response.getBody());
+            if (response.getStatusCode() == HttpStatus.OK) {
+                List<Transaction> transactions = Arrays.asList(response.getBody());
+                // Populate the grid with transaction data
+                transactionGrid.setItems(transactions);
+            } else {
+                Notification.show("Failed to fetch transactions: " + response.getStatusCode(), 3000, Notification.Position.MIDDLE);
+            }
 
-            // Populate the grid with transaction data
-            transactionGrid.setItems(transactions);
-
+        } catch (HttpServerErrorException e) {
+            Notification.show("Server error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         } catch (Exception e) {
-            e.printStackTrace();
-            Notification.show("Failed to fetch transactions", 3000, Notification.Position.MIDDLE);
+            Notification.show("Failed to fetch transactions: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
     }
 
@@ -173,7 +189,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
         try {
             BankAccount bankAccount = restTemplate.exchange(url, HttpMethod.GET, request, BankAccount.class).getBody();
-            balanceParagraph.setText("" + bankAccount.getBalance());
+            balanceParagraph.setText("" + bankAccount.getBalance() + " €");
         } catch (Exception e) {
             Notification.show("Error: " + e.getMessage());
         }
@@ -181,11 +197,12 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     private void openTransactionDialog() {
         Dialog dialog = new Dialog();
-        FormLayout formLayout = new FormLayout();
+        VerticalLayout formLayout = new VerticalLayout();
 
         NumberField amountField = new NumberField("Amount");
         TextField receiverField = new TextField("Receiver Account ID");
         TextField messageField = new TextField("Message");
+        H2 title = new H2("New Transaction");
 
         Button submitButton = new Button("Submit", event -> {
             double amount = amountField.getValue();
@@ -195,7 +212,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             dialog.close();
         });
 
-        formLayout.add(amountField, receiverField, messageField, submitButton);
+        formLayout.add(title, amountField, receiverField, messageField, submitButton);
         dialog.add(formLayout);
         dialog.open();
     }
@@ -227,4 +244,32 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
                 Notification.show("Error: " + e.getMessage());
             }
         }
+
+    private void fetchNotifications() {
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        if (token == null) {
+            Notification.show("Unauthorized: No token found in session.");
+            return;
+        }
+
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:8080/api/notifications";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<com.example.easybankproject.models.Notification[]> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    com.example.easybankproject.models.Notification[].class
+            );
+            List<com.example.easybankproject.models.Notification> notificationList = Arrays.asList(response.getBody());
+            grid.setItems(notificationList);
+        } catch (Exception e) {
+            Notification.show("Error: " + e.getMessage());
+        }
+    }
     }

@@ -2,8 +2,10 @@ package com.example.easybankproject.controllers;
 
 
 import com.example.easybankproject.db.BankAccountRepository;
+import com.example.easybankproject.db.NotificationRepository;
 import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
+import com.example.easybankproject.models.Notification;
 import com.example.easybankproject.models.User;
 import com.example.easybankproject.utils.JwtUtil;
 import org.atmosphere.config.service.Get;
@@ -18,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 
 @RestController
@@ -28,14 +31,17 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
 
     private final BankAccountRepository bankAccountRepository;
+
+    private final NotificationRepository notificationRepository;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, BankAccountRepository bankAccountRepository) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, BankAccountRepository bankAccountRepository, NotificationRepository notificationRepository, NotificationRepository notificationRepository1) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.bankAccountRepository = bankAccountRepository;
+        this.notificationRepository = notificationRepository1;
     }
 
     @GetMapping("/me")
@@ -66,6 +72,12 @@ public class UserController {
         bankAccountRepository.save(bankAccount);
 
         String token = jwtUtil.generateToken(String.valueOf(user.getUsername()));
+
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setContent("User " + user.getUsername() + " has registered successfully.");
+        notification.setTimestamp(LocalDateTime.now());
+        notificationRepository.save(notification);
         return ResponseEntity.ok(token);
     }
 
@@ -77,6 +89,12 @@ public class UserController {
         }
 
         String token = jwtUtil.generateToken(String.valueOf(user.getUsername()));
+
+        Notification notification = new Notification();
+        notification.setUser(existingUser);
+        notification.setContent("User " + user.getUsername() + " has logged in.");
+        notification.setTimestamp(LocalDateTime.now());
+        notificationRepository.save(notification);
         return ResponseEntity.ok(token);
     }
 }

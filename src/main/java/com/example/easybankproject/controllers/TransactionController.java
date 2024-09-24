@@ -2,12 +2,12 @@ package com.example.easybankproject.controllers;
 
 
 import com.example.easybankproject.db.BankAccountRepository;
-import com.example.easybankproject.db.TransactionHistoryRepository;
+import com.example.easybankproject.db.NotificationRepository;
 import com.example.easybankproject.db.TransactionRepository;
 import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
+import com.example.easybankproject.models.Notification;
 import com.example.easybankproject.models.Transaction;
-import com.example.easybankproject.models.TransactionHistory;
 import com.example.easybankproject.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,18 +28,18 @@ public class TransactionController {
 
     private TransactionRepository transactionRepository;
 
-    private TransactionHistoryRepository transactionHistoryRepository;
-
     private JwtUtil jwtUtil;
 
     private UserRepository userRepository;
 
-    public TransactionController(BankAccountRepository bankAccountRepository, JwtUtil jwtUtil, UserRepository userRepository, TransactionRepository transactionRepository, TransactionHistoryRepository transactionHistoryRepository) {
+    private NotificationRepository notificationRepository;
+
+    public TransactionController(BankAccountRepository bankAccountRepository, JwtUtil jwtUtil, UserRepository userRepository, TransactionRepository transactionRepository, NotificationRepository notificationRepository) {
         this.bankAccountRepository = bankAccountRepository;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
-        this.transactionHistoryRepository = transactionHistoryRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     @PostMapping("/create")
@@ -62,6 +63,22 @@ public class TransactionController {
         transaction.setAmount(transaction.getAmount());
         transaction.setMessage(transaction.getMessage());
         transactionRepository.save(transaction);
+
+        // Create notifications
+        Notification senderNotification = new Notification();
+        senderNotification.setUser(senderAccount.get().getUser());
+        senderNotification.setTransaction(transaction);
+        senderNotification.setContent("You sent " + transaction.getAmount() + " to account " + transaction.getReceiverAccountId());
+        senderNotification.setTimestamp(LocalDateTime.now());
+        notificationRepository.save(senderNotification);
+
+        Notification receiverNotification = new Notification();
+        receiverNotification.setUser(receiverAccount.get().getUser());
+        receiverNotification.setTransaction(transaction);
+        receiverNotification.setContent("You received " + transaction.getAmount() + " from account " + transaction.getSenderAccountId());
+        receiverNotification.setTimestamp(LocalDateTime.now());
+        notificationRepository.save(receiverNotification);
+
 
         return ResponseEntity.ok("Transaction created with ID: " + transaction.getTransactionId());
 
