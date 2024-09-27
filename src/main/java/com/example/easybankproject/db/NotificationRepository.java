@@ -21,4 +21,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     List<Notification> findByUserAndTransactionAndTimestampAfter(User user, Transaction transaction, LocalDateTime timestamp);
     List<Notification> findByUserAndTransactionAndTimestampBefore(User user, Transaction transaction, LocalDateTime timestamp);
     List<Notification> findByUserAndTransactionAndTimestampBetween(User user, Transaction transaction, LocalDateTime start, LocalDateTime end);
+
 }

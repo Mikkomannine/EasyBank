@@ -62,6 +62,7 @@ public class TransactionController {
         transaction.setReceiverAccountId(transaction.getReceiverAccountId());
         transaction.setAmount(transaction.getAmount());
         transaction.setMessage(transaction.getMessage());
+        transaction.setTimestamp(LocalDateTime.now());
         transactionRepository.save(transaction);
 
         // Create notifications

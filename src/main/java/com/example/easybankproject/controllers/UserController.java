@@ -52,7 +52,25 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @PutMapping("/update/me")
+    public ResponseEntity<User> updateUserData(@RequestHeader("Authorization") String token, @RequestBody User updatedUser) {
+        String jwtToken = token.substring(7); // Remove "Bearer " prefix
+        String username = jwtUtil.extractUsername(jwtToken);
+        User user = userRepository.findByUsername(username);
 
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        user.setEmail(updatedUser.getEmail());
+        user.setAddress(updatedUser.getAddress());
+        user.setPhonenumber(updatedUser.getPhonenumber());
+        user.setFirstname(updatedUser.getFirstname());
+        user.setLastname(updatedUser.getLastname());
+
+        userRepository.save(user);
+        return ResponseEntity.ok(user);
+    }
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
         if (userRepository.findByUsername(user.getUsername()) != null) {
@@ -75,7 +93,7 @@ public class UserController {
 
         Notification notification = new Notification();
         notification.setUser(user);
-        notification.setContent("User " + user.getUsername() + " has registered successfully.");
+        notification.setContent(user.getUsername() + " has registered successfully.");
         notification.setTimestamp(LocalDateTime.now());
         notificationRepository.save(notification);
         return ResponseEntity.ok(token);
@@ -92,7 +110,7 @@ public class UserController {
 
         Notification notification = new Notification();
         notification.setUser(existingUser);
-        notification.setContent("User " + user.getUsername() + " has logged in.");
+        notification.setContent(user.getUsername() + " has logged in.");
         notification.setTimestamp(LocalDateTime.now());
         notificationRepository.save(notification);
         return ResponseEntity.ok(token);
