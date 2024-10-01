@@ -1,65 +1,44 @@
-// src/main/java/com/example/easybankproject/controllers/BankAccountController.java
+
 package com.example.easybankproject.controllers;
 
-import com.example.easybankproject.db.BankAccountRepository;
-import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
-import com.example.easybankproject.models.User;
-import com.example.easybankproject.utils.JwtUtil;
+import com.example.easybankproject.services.BankAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.vaadin.flow.server.VaadinSession;
 
-import java.math.BigDecimal;
-
 @RestController
 @RequestMapping("/api/bankaccount")
 public class BankAccountController {
 
     @Autowired
-    private BankAccountRepository bankAccountRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private BankAccountController(UserRepository userRepository, BankAccountRepository bankAccountRepository, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.bankAccountRepository = bankAccountRepository;
-        this.jwtUtil = jwtUtil;
-    }
-
+    private BankAccountService bankAccountService;
 
     @GetMapping("/balance")
     public ResponseEntity<BankAccount> getBalance(@RequestHeader("Authorization") String token) {
-        String jwtToken = token.substring(7); // Remove "Bearer " prefix
-        String username = jwtUtil.extractUsername(jwtToken);
-        BankAccount ban = bankAccountRepository.findByUser(userRepository.findByUsername(username)).orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(ban);
+        try {
+            String jwtToken = token.substring(7); // Remove "Bearer " prefix
+            BankAccount bankAccount = bankAccountService.getBalance(jwtToken);
+            return ResponseEntity.ok(bankAccount);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
     }
 
     @PostMapping("/create")
     public ResponseEntity<String> createBankAccount(@RequestBody BankAccount bankAccount) {
+        try {
+            String username = (String) VaadinSession.getCurrent().getAttribute("username");
+            if (username == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: No user found in session.");
+            }
 
-        String username = (String) VaadinSession.getCurrent().getAttribute("username");
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: No user found in session.");
+            String response = bankAccountService.createBankAccount(bankAccount, username);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
-
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: User not found.");
-        }
-
-        bankAccount.setUser(user);
-        bankAccountRepository.save(bankAccount);
-
-        return ResponseEntity.ok("Bank account created with ID: " + bankAccount.getBankAccountId());
     }
-
 }

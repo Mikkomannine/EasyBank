@@ -29,47 +29,9 @@ public class ProfileView extends Composite<VerticalLayout> {
         getContent().addClassName("centered-column");
         displayUserProfile();
     }
-/*
-    private void displayUserProfile() {
-        String url = "http://localhost:8080/api/user/me";
-
-        // Retrieve the JWT token from the Vaadin session
-        String token = (String) VaadinSession.getCurrent().getAttribute("token");
-
-        if (token == null) {
-            getContent().add(new Div("Unauthorized: No token found in session."));
-            return;
-        }
-
-        // Set up headers with the JWT token
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-
-        HttpEntity<String> request = new HttpEntity<>(headers);
-
-        try {
-            User user = restTemplate.exchange(url, HttpMethod.GET, request, User.class).getBody();
-
-            if (user != null) {
-                getContent().add(new Div("Username: " + user.getUsername()));
-                getContent().add(new Div("Email: " + user.getEmail()));
-                getContent().add(new Div("Address: " + user.getAddress()));
-                getContent().add(new Div("Phone Number: " + user.getPhonenumber()));
-                getContent().add(new Div("First Name: " + user.getFirstname()));
-                getContent().add(new Div("Last Name: " + user.getLastname()));
-            } else {
-                getContent().add(new Div("Error: User not found."));
-            }
-
-        } catch (Exception e) {
-            getContent().add(new Div("Error: " + e.getMessage()));
-        }
-    }
-    */
 private void displayUserProfile() {
     String url = "http://localhost:8080/api/user/me";
 
-    // Retrieve the JWT token from the Vaadin session
     String token = (String) VaadinSession.getCurrent().getAttribute("token");
 
     if (token == null) {
@@ -77,7 +39,6 @@ private void displayUserProfile() {
         return;
     }
 
-    // Set up headers with the JWT token
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(token);
 

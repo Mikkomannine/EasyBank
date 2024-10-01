@@ -1,4 +1,4 @@
-// src/main/java/com/example/easybankproject/ui/BankAccountView.java
+
 package com.example.easybankproject.ui;
 
 import com.vaadin.flow.component.Composite;
@@ -33,17 +33,13 @@ public class BankAccountView extends Composite<VerticalLayout> {
     private void createBankAccount(BigDecimal initialBalance) {
         String url = "http://localhost:8080/api/bankaccount/create";
 
-        // Create a new bank account JSON object
         String jsonPayload = String.format("{\"balance\":%s}", initialBalance);
 
-        // Set up the headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Create the HTTP entity with the JSON payload and headers
         HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
 
-        // Make the POST request
         try {
             if (initialBalance == null) {
                 Notification.show("Please fill in all fields");

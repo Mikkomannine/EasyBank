@@ -63,13 +63,8 @@ public class LoginView extends VerticalLayout {
         logo.setHeight("200px");
         logo.setWidth("200px");
 
-        // Apply CSS class
-        //addClassName("login-view-container");
-        //logo.addClassName("logo");
         loginButton.getStyle().set("background-color", "hsl(99, 86%, 64%)");
         loginButton.getStyle().set("color", "white");
-        ;
-        // Set layout size
         setSizeFull();
 
         layoutRow.add(logo, h2);
@@ -97,18 +92,16 @@ public class LoginView extends VerticalLayout {
             if (response.getStatusCode() == HttpStatus.OK) {
                 String token = response.getBody();
 
-                // Store the JWT token in Vaadin session
                 VaadinSession session = VaadinSession.getCurrent();
                 session.setAttribute("token", token);
                 session.setAttribute("username", username);
 
-                // Log the session ID and attributes for debugging
                 System.out.println("Session ID: " + session.getSession().getId());
                 System.out.println("Token set in session: " + session.getAttribute("token"));
                 System.out.println("Username set in session: " + session.getAttribute("username"));
 
                 Notification.show("Login successful!");
-                getUI().ifPresent(ui -> ui.navigate("main")); // Navigate to dashboard after login
+                getUI().ifPresent(ui -> ui.navigate("main"));
             } else {
                 Notification.show("Login failed. Please check your username and password.");
             }

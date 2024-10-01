@@ -1,5 +1,107 @@
 package com.example.easybankproject.controllertests;
 
+import com.example.easybankproject.controllers.TransactionController;
+import com.example.easybankproject.models.Transaction;
+import com.example.easybankproject.services.TransactionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(TransactionController.class)
+public class TransactionControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private TransactionService transactionService;
+
+    @Autowired
+    private ObjectMapper objectMapper; // To convert objects to JSON
+
+    private Transaction transaction;
+
+    @BeforeEach
+    public void setUp() {
+        transaction = new Transaction();
+        // Set properties of the transaction if needed
+        transaction.setSenderAccountId(1);
+        transaction.setReceiverAccountId(2);
+        transaction.setAmount(100);
+        transaction.setMessage("Test transaction");
+    }
+
+    @Test
+    public void testCreateTransaction_Success() throws Exception {
+        // Mock the transaction service to return a success message
+        when(transactionService.createTransaction(any(Transaction.class)))
+                .thenReturn("Transaction created successfully");
+
+        // Perform a POST request to /api/transaction/create
+        mockMvc.perform(post("/api/transaction/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(transaction)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Transaction created successfully"));
+    }
+
+    @Test
+    public void testCreateTransaction_Failure() throws Exception {
+        // Mock the transaction service to return a failure message
+        when(transactionService.createTransaction(any(Transaction.class)))
+                .thenReturn("Transaction creation failed");
+
+        // Perform a POST request to /api/transaction/create
+        mockMvc.perform(post("/api/transaction/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(transaction)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Transaction creation failed"));
+    }
+
+    @Test
+    public void testGetTransactions_Success() throws Exception {
+        // Mock the transaction service to return a list of transactions
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(transaction);
+        when(transactionService.getTransactions(any(String.class)))
+                .thenReturn(transactions);
+
+        // Perform a GET request to /api/transaction/history with a valid Authorization header
+        mockMvc.perform(get("/api/transaction/history")
+                        .header("Authorization", "Bearer some-jwt-token"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(transactions)));
+    }
+
+    @Test
+    public void testGetTransactions_Unauthorized() throws Exception {
+        // Simulate a scenario where no Authorization header is provided
+        mockMvc.perform(get("/api/transaction/history"))
+                .andExpect(status().isBadRequest());
+    }
+}
+
+/*package com.example.easybankproject.controllertests;
+
 
 import com.example.easybankproject.controllers.TransactionController;
 import com.example.easybankproject.db.BankAccountRepository;
@@ -152,4 +254,4 @@ public class TransactionControllerTest {
                 .andExpect(jsonPath("$[0].message").value("Test transaction"));
     }
 
-}
+}*/

@@ -32,7 +32,6 @@ public class MainLayout extends AppLayout {
 
     private int notificationsCount = 0;
 
-    private Image notificationsImage = new Image("./images/notification.png", "notifications");
     private Button notificationsLink = new Button("Notis: " + notificationsCount);
 
 
@@ -92,7 +91,6 @@ public class MainLayout extends AppLayout {
 
         Button logoutButton = new Button("Logout", event -> {
             VaadinSession.getCurrent().setAttribute("token", null);
-            // clear the session
             VaadinSession.getCurrent().getSession().invalidate();
             getUI().ifPresent(ui -> ui.navigate("login"));
         });

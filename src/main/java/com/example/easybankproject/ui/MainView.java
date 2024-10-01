@@ -4,6 +4,7 @@ import com.example.easybankproject.db.BankAccountRepository;
 import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.Transaction;
+import com.example.easybankproject.services.TransactionService;
 import com.example.easybankproject.utils.JwtUtil;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -41,16 +42,16 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
     private final JwtUtil jwtUtil;
     private final Paragraph balanceParagraph;
 
-    private final BankAccountRepository bankAccountRepository;
-    private final UserRepository userRepository;
     private final Grid<Transaction> transactionGrid;
-    public MainView(JwtUtil jwtUtil, BankAccountRepository bankAccountRepository, UserRepository userRepository) {
+
+    private final TransactionService transactionService;
+
+    public MainView(JwtUtil jwtUtil, TransactionService transactionService) {
         this.jwtUtil = jwtUtil;
         this.transactionGrid = new Grid<>(Transaction.class);
         this.restTemplate = new RestTemplate();
         this.balanceParagraph = new Paragraph();
-        this.bankAccountRepository = bankAccountRepository;
-        this.userRepository = userRepository;
+        this.transactionService = transactionService;
 
 
         HorizontalLayout layoutRow = new HorizontalLayout();
@@ -125,16 +126,14 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     private void fetchTransactions() {
         try {
-            // Get JWT Token from session or any other storage
             String token = (String) VaadinSession.getCurrent().getAttribute("token");
 
-            // Set up the headers for the request, including the JWT token
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + token);
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
             ResponseEntity<Transaction[]> response = restTemplate.exchange(
-                    "http://localhost:8080/api/transaction/history",  // Replace with your backend endpoint
+                    "http://localhost:8080/api/transaction/history",
                     HttpMethod.GET,
                     entity,
                     Transaction[].class
@@ -142,7 +141,6 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 List<Transaction> transactions = Arrays.asList(response.getBody());
-                // Populate the grid with transaction data
                 transactionGrid.setItems(transactions);
             } else {
                 Notification.show("Failed to fetch transactions: " + response.getStatusCode(), 3000, Notification.Position.MIDDLE);
@@ -198,32 +196,32 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         dialog.add(formLayout);
         dialog.open();
     }
-   private void transaction(double amount, int receiver, String message) {
 
-       String url = "http://localhost:8080/api/transaction/create";
-       String username = (String) VaadinSession.getCurrent().getAttribute("username");
-       BankAccount sender = bankAccountRepository.findByUser(userRepository.findByUsername(username)).orElseThrow(() -> new RuntimeException("User not found"));
-       int senderID = sender.getBankAccountId();
-       System.out.println("Sender Account: " + sender);
-       System.out.println("Sender ID: " + senderID);
-
-
-       String jsonPayload = String.format("{\"amount\":\"%s\",\"receiverAccountId\":\"%s\",\"message\":\"%s\",\"senderAccountId\":\"%s\"}",
-               amount, receiver, message, senderID);
-       System.out.println("TransactionInfo: " + jsonPayload);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
-
-            // Make the POST request
-            try {
-                String transaction = restTemplate.postForObject(url, request, String.class);
-                Notification.show("transaction successful: " + transaction);
-            } catch (Exception e) {
-                Notification.show("Error: " + e.getMessage());
-            }
+    private void transaction(double amount, int receiver, String message) {
+        String url = "http://localhost:8080/api/transaction/create";
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        if (token == null) {
+            Notification.show("Unauthorized: No token found in session.");
+            return;
         }
+        int sender = transactionService.getSenderId(token);
+
+        String jsonPayload = String.format("{\"amount\":\"%s\",\"receiverAccountId\":\"%s\",\"message\":\"%s\",\"senderAccountId\":\"%s\"}",
+                amount, receiver, message, sender);
+        System.out.println("TransactionInfo: " + jsonPayload);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+
+        HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
+
+        try {
+            String transaction = restTemplate.postForObject(url, request, String.class);
+            Notification.show("Transaction successful: " + transaction);
+        } catch (Exception e) {
+            Notification.show("Error: " + e.getMessage());
+        }
+    }
 
 }
