@@ -34,6 +34,15 @@ public class BankAccountController {
         this.jwtUtil = jwtUtil;
     }
 
+
+    @GetMapping("/balance")
+    public ResponseEntity<BankAccount> getBalance(@RequestHeader("Authorization") String token) {
+        String jwtToken = token.substring(7); // Remove "Bearer " prefix
+        String username = jwtUtil.extractUsername(jwtToken);
+        BankAccount ban = bankAccountRepository.findByUser(userRepository.findByUsername(username)).orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(ban);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<String> createBankAccount(@RequestBody BankAccount bankAccount) {
 
@@ -51,15 +60,6 @@ public class BankAccountController {
         bankAccountRepository.save(bankAccount);
 
         return ResponseEntity.ok("Bank account created with ID: " + bankAccount.getBankAccountId());
-    }
-
-
-    @GetMapping("/balance")
-    public ResponseEntity<BankAccount> getBalance(@RequestHeader("Authorization") String token) {
-        String jwtToken = token.substring(7); // Remove "Bearer " prefix
-        String username = jwtUtil.extractUsername(jwtToken);
-        BankAccount ban = bankAccountRepository.findByUser(userRepository.findByUsername(username)).orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(ban);
     }
 
 }
