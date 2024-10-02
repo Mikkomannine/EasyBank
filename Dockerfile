@@ -1,5 +1,5 @@
 
-FROM maven:latest
+FROM maven:latest-eclipse-temurin-21
 
 # Set metadata information
 LABEL authors="mikktma"
@@ -14,7 +14,7 @@ COPY pom.xml /app/
 COPY . /app/
 
 # Package your application
-RUN mvn package
+RUN mvn package || { echo 'Maven build failed'; exit 1; }
 
 # Run the application
 CMD ["java", "-jar", "target/Easybank-0.0.1-SNAPSHOT.jar"]
