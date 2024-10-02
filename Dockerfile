@@ -1,5 +1,5 @@
-# Use an official Maven image as a parent image
-FROM maven:latest
+# Use an official Maven image with OpenJDK 17
+FROM maven:3.9.9-openjdk-17
 
 # Set metadata information
 LABEL authors="mikktma"
@@ -13,11 +13,12 @@ COPY pom.xml /app/
 # Copy the entire project to the container
 COPY . /app/
 
-# Package your application
-RUN mvn package
+# Package your application with detailed logs
+RUN mvn -X package
 
 # Run the application
 CMD ["java", "-jar", "target/easybank-0.0.1-SNAPSHOT.jar"]
+
 
 
 
