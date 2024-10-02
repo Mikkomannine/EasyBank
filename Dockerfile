@@ -17,7 +17,7 @@ COPY . /app/
 RUN mvn package
 
 # Run the application
-CMD ["java", "-jar", "target/easybank-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/Easybank-0.0.1-SNAPSHOT.jar"]
 
 
 
