@@ -141,6 +141,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 List<Transaction> transactions = Arrays.asList(response.getBody());
+                transactions.sort((t1, t2) -> t2.getTimestamp().compareTo(t1.getTimestamp()));
                 transactionGrid.setItems(transactions);
             } else {
                 Notification.show("Failed to fetch transactions: " + response.getStatusCode(), 3000, Notification.Position.MIDDLE);

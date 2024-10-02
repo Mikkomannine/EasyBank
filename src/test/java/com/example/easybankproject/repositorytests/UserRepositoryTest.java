@@ -26,9 +26,9 @@ public class UserRepositoryTest {
     @BeforeEach
     public void setup() {
         user = new User();
-        user.setUsername("testuser");
+        user.setUsername("test1user");
         user.setPassword("password123");
-        user.setEmail("testuser@example.com");
+        user.setEmail("test1user@example.com");
         user.setFirstname("Test");
         user.setLastname("User");
         user.setPhonenumber(1234567890);
@@ -38,8 +38,8 @@ public class UserRepositoryTest {
 
     @Test
     public void testFindByUsername() {
-        User foundUser = userRepository.findByUsername("testuser");
+        User foundUser = userRepository.findByUsername("test1user");
         assertThat(foundUser).isNotNull();
-        assertThat(foundUser.getUsername()).isEqualTo("testuser");
+        assertThat(foundUser.getUsername()).isEqualTo("test1user");
     }
 }

@@ -36,9 +36,9 @@ public class BankaccountRepositoryTest {
     @BeforeEach
     public void setup() {
         user = new User();
-        user.setUsername("testuser");
+        user.setUsername("test1user");
         user.setPassword("password123");
-        user.setEmail("testuser@example.com");
+        user.setEmail("test1user@example.com");
         user.setFirstname("Test");
         user.setLastname("User");
         user.setPhonenumber(1234567890);
@@ -55,7 +55,7 @@ public class BankaccountRepositoryTest {
     public void testFindByUser() {
         Optional<BankAccount> foundAccount = bankAccountRepository.findByUser(user);
         assertThat(foundAccount).isPresent();
-        assertThat(foundAccount.get().getUser().getUsername()).isEqualTo("testuser");
+        assertThat(foundAccount.get().getUser().getUsername()).isEqualTo("test1user");
     }
 
     @Test

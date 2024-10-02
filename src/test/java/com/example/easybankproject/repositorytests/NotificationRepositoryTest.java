@@ -2,6 +2,7 @@ package com.example.easybankproject.repositorytests;
 
 import com.example.easybankproject.db.NotificationRepository;
 import com.example.easybankproject.db.UserRepository;
+import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.Notification;
 import com.example.easybankproject.models.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,10 +32,11 @@ public class NotificationRepositoryTest {
     private User user;
     private Notification notification;
 
+
     @BeforeEach
     public void setup() {
         user = new User();
-        user.setUsername("testuser");
+        user.setUsername("test1user");
         user.setPassword("password123");
         user.setEmail("testuser@example.com");
         user.setFirstname("Test");

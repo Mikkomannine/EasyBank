@@ -4,8 +4,12 @@ import com.example.easybankproject.models.User;
 import com.example.easybankproject.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.awt.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -29,26 +33,60 @@ public class UserController {
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
-
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
         String result = userService.registerUser(user);
-        if (result.equals("Username already exists.")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+
+        if (result == null || result.equals("Username already exists.")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Username already exists.");
         }
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/login")
+
+    /*
+
+    @PostMapping("/register")
+    public ResponseEntity<String> registerUser(@RequestBody User user) {
+        String result = userService.registerUser(user);
+
+        if (result == null || result.equals("Username already exists.")) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
+                    .body("Username already exists.");
+        }
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
+                .body(result);
+    }*/
+
+   /* @PostMapping("/login")
     public ResponseEntity<String> loginUser(@RequestBody User user) {
         String result = userService.loginUser(user);
-        if (result.equals("Invalid username or password.")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        if (result == null || result.equals("Invalid username or password.")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
         }
         return ResponseEntity.ok(result);
-    }
+    }*/
+   @PostMapping("/login")
+   public ResponseEntity<String> loginUser(@RequestBody User user) {
+       String result = userService.loginUser(user);
+       if (result == null || result.equals("Invalid username or password.")) {
+           return ResponseEntity
+                   .status(HttpStatus.UNAUTHORIZED)
+                   .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
+                   .body("Invalid username or password.");
+       }
+       return ResponseEntity
+               .ok()
+               .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
+               .body(result);
+   }
+
 }
 

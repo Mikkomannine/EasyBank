@@ -35,4 +35,11 @@ build/
 
 /generated/
 /target/
+package-lock.json
+package.json
+tsconfig.json
+types.d.ts
+vite.config.ts
+vite.generated.ts
 
+application.properties
