@@ -60,7 +60,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-                // Build the project
+                // Build the project and package the JAR file
                 bat 'mvn clean package' // Use 'sh' if on Unix-like systems
             }
         }
