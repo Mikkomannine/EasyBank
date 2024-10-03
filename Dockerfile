@@ -4,7 +4,7 @@ FROM eclipse-temurin:21-jre-alpine
 # Set metadata information
 LABEL authors="mikktma"
 
-# Set the working directory in the container
+# Set the working directory in the container asdasd
 WORKDIR /app
 
 # Copy the already built JAR from Jenkins workspace to the Docker image
