@@ -13,6 +13,19 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>vaadindemo</name>
     <description>vaadindemo</description>
+    <url/>
+    <licenses>
+        <license/>
+    </licenses>
+    <developers>
+        <developer/>
+    </developers>
+    <scm>
+        <connection/>
+        <developerConnection/>
+        <tag/>
+        <url/>
+    </scm>
     <properties>
         <java.version>17</java.version>
         <vaadin.version>24.4.11</vaadin.version>
@@ -33,8 +46,8 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring-boot-starter</artifactId>
-            <version>24.4.7</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -74,9 +87,10 @@
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
+            <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson, jjwt-orgjson, etc. -->
             <version>0.11.5</version>
         </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -89,6 +103,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -139,6 +154,7 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
+
             </dependencies>
             <build>
                 <plugins>
@@ -157,20 +173,9 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <version>3.2.2</version>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>EasyBankProjectApplication</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
+
 </project>
