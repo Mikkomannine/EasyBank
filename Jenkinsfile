@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Mikkomannine/EasyBank.git'
+                git branch: 'final', url: 'https://github.com/Mikkomannine/EasyBank.git'
             }
         }
         stage('Build') {
