@@ -4,6 +4,7 @@ import com.example.easybankproject.db.TransactionRepository;
 import com.example.easybankproject.models.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -23,6 +24,7 @@ public class TransactionRepositoryTest {
     private TransactionRepository transactionRepository;
 
     private Transaction transaction1;
+
     private Transaction transaction2;
 
 

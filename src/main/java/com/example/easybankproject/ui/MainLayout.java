@@ -1,6 +1,6 @@
+
 package com.example.easybankproject.ui;
 
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -25,15 +25,14 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 import java.util.List;
 
-
 @CssImport("./styles/mainlayout.css")
 @PreserveOnRefresh
 public class MainLayout extends AppLayout {
 
     private int notificationsCount = 0;
-
     private Button notificationsLink = new Button("Notis: " + notificationsCount);
-
+    private Grid<com.example.easybankproject.models.Notification> grid;
+    private List<com.example.easybankproject.models.Notification> notificationList;
 
     public MainLayout() {
         setPrimarySection(Section.DRAWER);
@@ -46,11 +45,13 @@ public class MainLayout extends AppLayout {
         var toggle = new DrawerToggle();
         toggle.setAriaLabel("Toggle menu");
         toggle.setTooltipText("Toggle menu");
+        toggle.addClassName("toggle");
         var header = new Header(toggle);
         header.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.JustifyContent.BETWEEN, LumoUtility.Padding.End.MEDIUM);
 
         addToNavbar(false, header);
     }
+
 
     private void addDrawerContent() {
         VerticalLayout drawerLayout = new VerticalLayout();
@@ -71,23 +72,19 @@ public class MainLayout extends AppLayout {
         profileLink.addClassNames("btn-hover", "color-5");
         profileLayout.add(profileLink);
 
-        VerticalLayout notificationsLayout = new VerticalLayout();
-        notificationsLayout.setWidth("40px");
-        notificationsLayout.setHeight("80px");
-        notificationsLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        VerticalLayout HomeLayout = new VerticalLayout();
+        HomeLayout.setWidth("40px");
+        HomeLayout.setHeight("80px");
+        HomeLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
-
-        notificationsLink.addClassNames("btn-hover", "color-5");
-        notificationsLink.addClickListener(event -> openNotificationsDialog());
-        notificationsLayout.add(notificationsLink);
-
-        VerticalLayout historyLayout = new VerticalLayout();
-        historyLayout.setWidth("40px");
-        historyLayout.setHeight("80px");
-        historyLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         RouterLink homeLink = new RouterLink("Home", MainView.class);
         homeLink.addClassNames("btn-hover", "color-5");
-        historyLayout.add(homeLink);
+        HomeLayout.add(homeLink);
+
+        VerticalLayout LogoutLayout = new VerticalLayout();
+        LogoutLayout.setWidth("40px");
+        LogoutLayout.setHeight("80px");
+        LogoutLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
         Button logoutButton = new Button("Logout", event -> {
             VaadinSession.getCurrent().setAttribute("token", null);
@@ -95,10 +92,15 @@ public class MainLayout extends AppLayout {
             getUI().ifPresent(ui -> ui.navigate("login"));
         });
 
-        drawerLayout.add(profileLayout, notificationsLayout, historyLayout, logoutButton);
+        logoutButton.addClassNames("logout-btn-hover", "color-5");
+        LogoutLayout.add(logoutButton);
+
+
+
+        drawerLayout.add(profileLayout, HomeLayout, LogoutLayout);
     }
 
-    private void fetchNotificationsCount() {
+    public void fetchNotificationsCount() {
         String token = (String) VaadinSession.getCurrent().getAttribute("token");
         if (token == null) {
             Notification.show("Unauthorized: No token found in session.");
@@ -139,12 +141,12 @@ public class MainLayout extends AppLayout {
             return;
         }
 
-        List<com.example.easybankproject.models.Notification> notificationList = fetchNotifications(token);
+        notificationList = fetchNotifications(token);
         if (notificationList == null) {
             return;
         }
 
-        Grid<com.example.easybankproject.models.Notification> grid = new Grid<>(com.example.easybankproject.models.Notification.class);
+        grid = new Grid<>(com.example.easybankproject.models.Notification.class);
         grid.setItems(notificationList);
         grid.setColumns("content", "timestamp");
 
@@ -152,10 +154,6 @@ public class MainLayout extends AppLayout {
             Button deleteButton = new Button("Delete");
             deleteButton.addClickListener(event -> {
                 deleteNotification(notification.getNotificationId(), token);
-                notificationList.remove(notification);
-                grid.setItems(notificationList);
-                Notification.show("Notification deleted");
-                fetchNotificationsCount();
             });
             return deleteButton;
         }).setHeader("Actions");
@@ -198,10 +196,16 @@ public class MainLayout extends AppLayout {
 
         try {
             restTemplate.exchange(deleteUrl, HttpMethod.DELETE, deleteEntity, Void.class);
+            Notification.show("Notification deleted");
+            // Refresh the notification count and list
+            fetchNotificationsCount();
+            notificationList = fetchNotifications(token);
+            grid.setItems(notificationList);
         } catch (Exception e) {
             Notification.show("Error: " + e.getMessage());
         }
     }
+
     @Override
     protected void afterNavigation() {
         super.afterNavigation();

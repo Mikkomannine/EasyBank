@@ -3,6 +3,7 @@ package com.example.easybankproject.ui;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
@@ -27,11 +28,11 @@ import org.springframework.web.client.RestTemplate;
 @PageTitle("Registeration")
 @Route(value = "register")
 @RouteAlias(value = "")
+@CssImport("./styles/register.css")
 public class RegisterationView extends Composite<VerticalLayout> {
     private final RestTemplate restTemplate;
     public RegisterationView() {
         this.restTemplate = new RestTemplate();
-
         TextField username = new TextField("Username");
         TextField firstname = new TextField("First Name");
         TextField lastname = new TextField("Last Name");
@@ -40,56 +41,44 @@ public class RegisterationView extends Composite<VerticalLayout> {
         TextField address = new TextField("Address");
         PasswordField passwordField = new PasswordField("Password");
 
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        VerticalLayout layoutColumn = new VerticalLayout();
-        VerticalLayout main= new VerticalLayout();
-        main.setWidth("100%");
-        main.setHeight("800px");
-        main.setJustifyContentMode(JustifyContentMode.START);
-        main.setAlignItems(Alignment.CENTER);
-        getContent().setAlignItems(Alignment.CENTER);
-
-        layoutRow.setWidthFull();
-        layoutRow.addClassName(LumoUtility.Gap.XLARGE);
-        layoutRow.addClassName(LumoUtility.Padding.XLARGE);
-        layoutRow.setWidth("1100px");
-        layoutRow.getStyle().set("flex-grow", "1");
-        layoutRow.setAlignItems(Alignment.CENTER);
-        layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
-
-        layoutColumn.setWidthFull();
-        layoutColumn.setFlexGrow(1.0, layoutRow);
-        layoutColumn.setJustifyContentMode(JustifyContentMode.CENTER);
-        layoutColumn.setAlignItems(Alignment.CENTER);
-        layoutColumn.getStyle().set("border-radius", "10px");
-        layoutColumn.getStyle().set("margin-bottom", "20px");
-
+        username.addClassName("field");
+        firstname.addClassName("field");
+        lastname.addClassName("field");
+        emailField.addClassName("field");
+        phonenumber.addClassName("field");
+        address.addClassName("field");
+        passwordField.addClassName("field");
 
         H2 h2 = new H2();
         h2.setText("Your Easy Path To Financial Freedom .");
-        h2.setWidth("max-content");
-
-        Button registerButton = new Button("Register", event -> registerUser(username.getValue() , passwordField.getValue(), emailField.getValue(), firstname.getValue(), lastname.getValue(), phonenumber.getValue(), address.getValue()));
-        RouterLink loginLink = new RouterLink("Already have an account? Login here.", LoginView.class);
 
         Image logo = new Image("images/easybank_logo.jpg", "Company Logo");
         logo.setHeight("200px");
         logo.setWidth("200px");
 
-        registerButton.getStyle().set("background-color", "hsl(99, 86%, 64%)");
-        registerButton.getStyle().set("color", "white");
-        ;
-        getContent().setSizeFull();
+        Button registerButton = new Button("Register", event -> registerUser(username.getValue() , passwordField.getValue(), emailField.getValue(), firstname.getValue(), lastname.getValue(), phonenumber.getValue(), address.getValue()));
+        registerButton.addClassName("register-btn");
+        RouterLink loginLink = new RouterLink("Already have an account? Login here.", LoginView.class);
+
+        HorizontalLayout layoutRow = new HorizontalLayout();
+        HorizontalLayout infoRow = new HorizontalLayout();
+        VerticalLayout layoutColumn = new VerticalLayout();
+        VerticalLayout layoutColumn2 = new VerticalLayout();
+        layoutColumn.addClassName("register-column");
+        layoutColumn2.addClassName("register-column");
+        VerticalLayout main= new VerticalLayout();
 
         layoutRow.add(logo, h2);
-        layoutColumn.add(username, firstname, lastname, emailField, phonenumber, address, passwordField, registerButton, loginLink);
-        layoutColumn.getStyle().set("border-radius", "10px");
-        layoutColumn.getStyle().set("box-shadow", "0 0 10px hsl(99, 86%, 64%)");
-        layoutColumn.setWidth("400px");
+        layoutRow.addClassName("layout-row");
+        layoutColumn.add(username, passwordField, firstname, lastname);
+        layoutColumn2.add(emailField, phonenumber, address, registerButton, loginLink);
+        infoRow.add(layoutColumn, layoutColumn2);
+        infoRow.addClassName("info-row");
+        main.add(layoutRow, infoRow);
+        main.addClassName("main");
 
-        main.add(layoutRow, layoutColumn);
+        getContent().addClassName("register-body");
         getContent().add(main);
-
     }
     private void registerUser(String username, String password, String email, String firstname, String lastname, String phonenumber, String address) {
         String url = "http://localhost:8080/api/user/register";

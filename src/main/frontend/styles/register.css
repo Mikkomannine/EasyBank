@@ -1,37 +1,56 @@
-.layout-row {
-    width: 1100px;
-    flex-grow: 1;
-    align-items: center;
-    justify-content: center;
-    gap: var(--lumo-space-xl);
-    padding: var(--lumo-space-xl);
-}
-
-.main {
-    height: 800px;
+.info-row {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-/*
-.layout-row logo {
-    height: 200px;
-    width: 200px;
-}
-/*
-.layout-column {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 30px;
     border-radius: 10px;
-    margin-bottom: 20px;
     box-shadow: 0 0 10px hsl(99, 86%, 64%);
 }
-*/
-.register-button {
+.layout-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.register-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+}
+.login-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px hsl(99, 86%, 64%);
+    max-width: 400px;
+}
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.register-btn {
     background-color: hsl(99, 86%, 64%);
     color: white;
+    margin-top: 37px;
+    width: 192px;
+}
+
+.register-btn:hover {
+    cursor: pointer;
+    background-color: hsl(100, 69%, 35%);
+    color: white;
+}
+
+.register-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
