@@ -204,8 +204,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         try {
             restTemplate.exchange(deleteUrl, HttpMethod.DELETE, deleteEntity, Void.class);
             Notification.show("Notification deleted");
-            // Refresh the notification count and list
-            //fetchNotificationsCount();
+
             notificationList = fetchNotifications(token);
             grid.setItems(notificationList);
             fetchNotificationsCount();
@@ -214,55 +213,6 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         }
     }
 
-    /*
-private void fetchTransactions() {
-    try {
-        String token = (String) VaadinSession.getCurrent().getAttribute("token");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<Transaction[]> response = restTemplate.exchange(
-                "http://localhost:8080/api/transaction/history",
-                HttpMethod.GET,
-                entity,
-                Transaction[].class
-        );
-
-        if (response.getStatusCode() == HttpStatus.OK) {
-            List<Transaction> transactions = Arrays.asList(response.getBody());
-            transactions.sort((t1, t2) -> t2.getTimestamp().compareTo(t1.getTimestamp()));
-            transactionGrid.setItems(transactions);
-            transactionGrid.setClassName("transactions-grid");
-            transactionGrid.getColumnByKey("amount").setVisible(false);
-
-            int currentAccountId = transactionService.getSenderId(token);
-
-            transactionGrid.addColumn(new ComponentRenderer<>(transaction -> {
-                Div container = new Div();
-                container.getStyle().set("padding", "10px");
-                container.getStyle().set("border-radius", "5px");
-
-                String amountPrefix = "";
-                if (transaction.getSenderAccountId() == currentAccountId) {
-                    container.getStyle().set("background-color", "#ffcccc");
-                    amountPrefix = "-";
-                } else if (transaction.getReceiverAccountId() == currentAccountId) {
-                    container.getStyle().set("background-color", "#ccffcc");
-                    amountPrefix = "+";
-                }
-
-                container.setText(amountPrefix + transaction.getAmount() + " €");
-                return container;
-            })).setHeader("Amount");
-
-        }
-    } catch (HttpServerErrorException e) {
-        Notification.show("Server error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
-    }
-}
-*/
     private void fetchTransactions() {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("token");
@@ -338,8 +288,9 @@ private void fetchTransactions() {
     private void openTransactionDialog() {
         Dialog dialog = new Dialog();
         VerticalLayout formLayout = new VerticalLayout();
+        HorizontalLayout buttonLayout = new HorizontalLayout();
 
-        NumberField amountField = new NumberField("Amount");
+        NumberField amountField = new NumberField("Amount €");
         TextField receiverField = new TextField("Receiver Account ID");
         TextField messageField = new TextField("Message");
         H2 title = new H2("New Transaction");
@@ -356,8 +307,13 @@ private void fetchTransactions() {
             dialog.close();
         });
 
+        Button cancelButton = new Button("Cancel", event -> dialog.close());
+        cancelButton.addClassName("delete");
+
+        buttonLayout.add(submitButton, cancelButton);
+
         submitButton.setClassName("transaction-btn");
-        formLayout.add(title, amountField, receiverField, messageField, submitButton);
+        formLayout.add(title, amountField, receiverField, messageField, buttonLayout);
         dialog.add(formLayout);
         dialog.open();
     }

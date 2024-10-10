@@ -46,45 +46,18 @@ public class UserController {
         return ResponseEntity.ok(result);
     }
 
-
-    /*
-
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        String result = userService.registerUser(user);
-
-        if (result == null || result.equals("Username already exists.")) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
-                    .body("Username already exists.");
-        }
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
-                .body(result);
-    }*/
-
-   /* @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody User user) {
-        String result = userService.loginUser(user);
-        if (result == null || result.equals("Invalid username or password.")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
-        }
-        return ResponseEntity.ok(result);
-    }*/
    @PostMapping("/login")
    public ResponseEntity<String> loginUser(@RequestBody User user) {
        String result = userService.loginUser(user);
        if (result == null || result.equals("Invalid username or password.")) {
            return ResponseEntity
                    .status(HttpStatus.UNAUTHORIZED)
-                   .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
+                   .contentType(MediaType.TEXT_PLAIN)
                    .body("Invalid username or password.");
        }
        return ResponseEntity
                .ok()
-               .contentType(MediaType.TEXT_PLAIN)  // Specify UTF-8
+               .contentType(MediaType.TEXT_PLAIN)
                .body(result);
    }
 

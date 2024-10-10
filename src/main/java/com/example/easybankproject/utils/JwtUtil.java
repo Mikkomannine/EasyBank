@@ -1,5 +1,6 @@
 package com.example.easybankproject.utils;
 
+import com.example.easybankproject.models.Transaction;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -10,7 +11,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
-public class JwtUtil {
+public class JwtUtil extends Transaction {
 
     private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 

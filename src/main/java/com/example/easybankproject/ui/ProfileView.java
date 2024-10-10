@@ -215,7 +215,7 @@ public class ProfileView extends Composite<VerticalLayout> {
         Dialog dialog = new Dialog();
         dialog.addClassName("dialog");
 
-        H3 title = new H3("Update Profile:");
+        H3 title = new H3("Update Profile");
         TextField emailField = new TextField("Email", user.getEmail(), "");
         TextField addressField = new TextField("Address", user.getAddress(), "");
         TextField phoneField = new TextField("Phone Number", String.valueOf(user.getPhonenumber()), "");

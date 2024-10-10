@@ -1,6 +1,5 @@
 package com.example.easybankproject.services;
 
-import com.example.easybankproject.db.BankAccountRepository;
 import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.User;
 import com.example.easybankproject.utils.JwtUtil;
