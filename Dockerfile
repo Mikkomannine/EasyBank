@@ -1,16 +1,24 @@
-# Use an official Java runtime as a parent image
-FROM maven:latest
-# Set metadata information
-LABEL authors="mikktma"
+FROM maven:3.8.8-eclipse-temurin-17 AS build
+WORKDIR /app
 
-WORKDIR /usr/src
-# Set the working directory in the container asdasd
+# Copy the pom.xml and source code
+COPY pom.xml .
+COPY src ./src
 
-# Copy the already built JAR from Jenkins workspace to the Docker image
-COPY target/EasyBank-0.0.1-SNAPSHOT.jar /app/EasyBank-0.0.1-SNAPSHOT.jar
+# Build the application with the production profile
+RUN mvn clean package -Pproduction
+
+# Use an alternative Java 17 runtime as a parent image
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+
+# Copy the built JAR from the build stage
+COPY --from=build /app/target/EasyBank-0.0.1-SNAPSHOT.jar /app/EasyBank-0.0.1-SNAPSHOT.jar
 
 # Run the application
 CMD ["java", "-jar", "/app/EasyBank-0.0.1-SNAPSHOT.jar"]
+
+
 
 
 

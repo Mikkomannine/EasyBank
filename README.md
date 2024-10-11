@@ -1,4 +1,4 @@
-![easybank_logo-1__1_-removebg-preview.png](src%2Fmain%2Fresources%2FMETA-INF%2Fresources%2Fimages%2Feasybank_logo-1__1_-removebg-preview.png)
+
 ____
 # Introduction
 This project involves a simple online banking application that allows users to register a new account, view their account balance, transaction history, and make transactions. The application is built using Spring Boot, Vaadin, MariaDB and Maven. Jenkins is used for CI/CD pipelines, and Jacoco for code coverage. Docker is used for containerization, but still in progress.
@@ -22,18 +22,12 @@ ____
 - Jenkins
 - Docker
 ____
-# ER Diagram
-![easybank-er.png](src%2Fmain%2Fresources%2FMETA-INF%2Fresources%2Fimages%2Feasybank-er.png)
+# Images
+images are located in `src/main/resources/META-INF/resources/images`
 ____
-# Relational Schema
-![easybank-relational.png](src%2Fmain%2Fresources%2FMETA-INF%2Fresources%2Fimages%2Feasybank-relational.png)
-____
-# Sequence Diagram
-![easybank-sequence.png](src%2Fmain%2Fresources%2FMETA-INF%2Fresources%2Fimages%2Feasybank-sequence.png)
-____
-# Activity Diagram
-![EasyBank-acticity.png](src%2Fmain%2Fresources%2FMETA-INF%2Fresources%2Fimages%2FEasyBank-acticity.png)
-____
-# Class Diagram
-![easybank-classdiagram.png](src%2Fmain%2Fresources%2FMETA-INF%2Fresources%2Fimages%2Feasybank-classdiagram.png)
+# Authors
+- Mikko Manninen
+- Valtteri Ikonen
+- Lenni Liukkonen
+- Onni Mejia
 ____

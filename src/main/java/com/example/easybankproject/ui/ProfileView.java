@@ -122,6 +122,7 @@ public class ProfileView extends Composite<VerticalLayout> {
 package com.example.easybankproject.ui;
 
 import com.example.easybankproject.models.User;
+import com.example.easybankproject.utils.JwtUtil;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -133,6 +134,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
@@ -140,18 +142,36 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
+import com.vaadin.flow.router.BeforeEnterObserver;
+
 
 @PageTitle("Profile")
 @CssImport("./styles/profileview.css")
 @Route(value = "profile", layout = MainLayout.class)
-public class ProfileView extends Composite<VerticalLayout> {
+public class ProfileView extends Composite<VerticalLayout> implements BeforeEnterObserver {
+
+    private final JwtUtil jwtUtil;
     private final RestTemplate restTemplate;
 
-    public ProfileView() {
+    public ProfileView(JwtUtil jwtUtil) {
         this.restTemplate = new RestTemplate();
+        this.jwtUtil = jwtUtil;
         getContent().addClassName("centered-column");
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        String username = (String) VaadinSession.getCurrent().getAttribute("username");
+
+        if (token == null || !jwtUtil.validateToken(token, username)) {
+            Notification.show("Please log in.");
+            event.rerouteTo(LoginView.class );
+        }
         displayUserProfile();
     }
+
+
 
     private void displayUserProfile() {
         String url = "http://localhost:8080/api/user/me";

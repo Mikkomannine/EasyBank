@@ -50,8 +50,8 @@ public class TransactionService {
         transaction.setTimestamp(LocalDateTime.now());
         transactionRepository.save(transaction);
 
-        notificationService.createNotification(senderAccount.get().getUser(), transaction, "You sent " + transaction.getAmount() + " to account " + transaction.getReceiverAccountId());
-        notificationService.createNotification(receiverAccount.get().getUser(), transaction, "You received " + transaction.getAmount() + " from account " + transaction.getSenderAccountId());
+        notificationService.createNotification(senderAccount.get().getUser(), transaction, "You sent " + transaction.getAmount() + " € to account " + transaction.getReceiverAccountId());
+        notificationService.createNotification(receiverAccount.get().getUser(), transaction, "You received " + transaction.getAmount() + " € from account " + transaction.getSenderAccountId());
 
         return "Transaction created with ID: " + transaction.getTransactionId();
     }
