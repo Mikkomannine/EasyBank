@@ -1,4 +1,5 @@
 
+
 package com.example.easybankproject.ui;
 
 import com.vaadin.flow.component.Composite;
@@ -21,6 +22,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.context.MessageSource;
+import java.util.Locale;
 
 @PageTitle("Registeration")
 @Route(value = "register")
@@ -28,15 +31,36 @@ import org.springframework.web.client.RestTemplate;
 @CssImport("./styles/register.css")
 public class RegisterationView extends Composite<VerticalLayout> {
     private final RestTemplate restTemplate;
-    public RegisterationView() {
+    private final MessageSource messageSource;
+
+    public RegisterationView(MessageSource messageSource) {
         this.restTemplate = new RestTemplate();
-        TextField username = new TextField("Username");
-        TextField firstname = new TextField("First Name");
-        TextField lastname = new TextField("Last Name");
-        EmailField emailField = new EmailField("Email");
-        TextField phonenumber = new TextField("Phone Number");
-        TextField address = new TextField("Address");
-        PasswordField passwordField = new PasswordField("Password");
+        this.messageSource = messageSource;
+
+        // Language flags
+        Image englishFlag = new Image("images/united-kingdom.png", "English");
+        englishFlag.addClickListener(event -> changeLanguage(Locale.ENGLISH));
+        Image finnishFlag = new Image("images/finland.png", "Finnish");
+        finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
+        Image arabicFlag = new Image("images/arabic.png", "Arabic");
+        arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
+
+        englishFlag.setHeight("30px");
+        englishFlag.setWidth("30px");
+        finnishFlag.setHeight("30px");
+        finnishFlag.setWidth("30px");
+        arabicFlag.setHeight("30px");
+        arabicFlag.setWidth("30px");
+
+        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, finnishFlag, arabicFlag);
+
+        TextField username = new TextField(messageSource.getMessage("username.label", null, getLocale()));
+        TextField firstname = new TextField(messageSource.getMessage("firstname.label", null, getLocale()));
+        TextField lastname = new TextField(messageSource.getMessage("lastname.label", null, getLocale()));
+        EmailField emailField = new EmailField(messageSource.getMessage("email.label", null, getLocale()));
+        TextField phonenumber = new TextField(messageSource.getMessage("phonenumber.label", null, getLocale()));
+        TextField address = new TextField(messageSource.getMessage("address.label", null, getLocale()));
+        PasswordField passwordField = new PasswordField(messageSource.getMessage("password.label", null, getLocale()));
 
         username.addClassName("field");
         firstname.addClassName("field");
@@ -47,15 +71,15 @@ public class RegisterationView extends Composite<VerticalLayout> {
         passwordField.addClassName("field");
 
         H2 h2 = new H2();
-        h2.setText("Your Easy Path To Financial Freedom .");
+        h2.setText(messageSource.getMessage("welcome.message", null, getLocale()));
 
         Image logo = new Image("images/easybank_logo.jpg", "Company Logo");
         logo.setHeight("200px");
         logo.setWidth("200px");
 
-        Button registerButton = new Button("Register", event -> registerUser(username.getValue() , passwordField.getValue(), emailField.getValue(), firstname.getValue(), lastname.getValue(), phonenumber.getValue(), address.getValue()));
+        Button registerButton = new Button(messageSource.getMessage("register.button", null, getLocale()), event -> registerUser(username.getValue(), passwordField.getValue(), emailField.getValue(), firstname.getValue(), lastname.getValue(), phonenumber.getValue(), address.getValue()));
         registerButton.addClassName("register-btn");
-        RouterLink loginLink = new RouterLink("Already have an account? Login here.", LoginView.class);
+        RouterLink loginLink = new RouterLink(messageSource.getMessage("login.link", null, getLocale()), LoginView.class);
 
         HorizontalLayout layoutRow = new HorizontalLayout();
         HorizontalLayout infoRow = new HorizontalLayout();
@@ -63,7 +87,7 @@ public class RegisterationView extends Composite<VerticalLayout> {
         VerticalLayout layoutColumn2 = new VerticalLayout();
         layoutColumn.addClassName("register-column");
         layoutColumn2.addClassName("register-column");
-        VerticalLayout main= new VerticalLayout();
+        VerticalLayout main = new VerticalLayout();
 
         layoutRow.add(logo, h2);
         layoutRow.addClassName("layout-row");
@@ -71,12 +95,18 @@ public class RegisterationView extends Composite<VerticalLayout> {
         layoutColumn2.add(emailField, phonenumber, address, registerButton, loginLink);
         infoRow.add(layoutColumn, layoutColumn2);
         infoRow.addClassName("info-row");
-        main.add(layoutRow, infoRow);
+        main.add(layoutRow, infoRow, languageLayout);
         main.addClassName("main");
 
         getContent().addClassName("register-body");
         getContent().add(main);
     }
+
+    private void changeLanguage(Locale locale) {
+        VaadinSession.getCurrent().setLocale(locale);
+        getUI().ifPresent(ui -> ui.getPage().reload());
+    }
+
     private void registerUser(String username, String password, String email, String firstname, String lastname, String phonenumber, String address) {
         String url = "http://localhost:8080/api/user/register";
 

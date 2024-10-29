@@ -91,6 +91,7 @@ public class LoginView extends UserController {
 package com.example.easybankproject.ui;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
@@ -105,6 +106,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 @Route("login")
+@CssImport("./styles/mainlayout.css")
 public class LoginView extends VerticalLayout {
     private final RestTemplate restTemplate;
     public LoginView() {
