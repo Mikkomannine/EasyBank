@@ -36,23 +36,28 @@ public class RegisterationView extends Composite<VerticalLayout> {
     public RegisterationView(MessageSource messageSource) {
         this.restTemplate = new RestTemplate();
         this.messageSource = messageSource;
-
+        Locale currentLocale = VaadinSession.getCurrent().getLocale();
+        System.out.println("Current Locale: " + currentLocale);
         // Language flags
         Image englishFlag = new Image("images/united-kingdom.png", "English");
-        englishFlag.addClickListener(event -> changeLanguage(Locale.ENGLISH));
-        Image finnishFlag = new Image("images/finland.png", "Finnish");
-        finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
+        englishFlag.addClickListener(event -> changeLanguage(new Locale("en")));
+        Image koreanFlag = new Image("images/south-korea.png", "Korean");
+        koreanFlag.addClickListener(event -> changeLanguage(new Locale("ko")));
         Image arabicFlag = new Image("images/arabic.png", "Arabic");
         arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
+        Image finnishFlag = new Image("images/finland.png", "Finnish");
+        finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
 
         englishFlag.setHeight("30px");
         englishFlag.setWidth("30px");
-        finnishFlag.setHeight("30px");
-        finnishFlag.setWidth("30px");
+        koreanFlag.setHeight("30px");
+        koreanFlag.setWidth("30px");
         arabicFlag.setHeight("30px");
         arabicFlag.setWidth("30px");
+        finnishFlag.setHeight("30px");
+        finnishFlag.setWidth("30px");
 
-        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, finnishFlag, arabicFlag);
+        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag);
 
         TextField username = new TextField(messageSource.getMessage("username.label", null, getLocale()));
         TextField firstname = new TextField(messageSource.getMessage("firstname.label", null, getLocale()));

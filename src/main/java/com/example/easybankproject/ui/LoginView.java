@@ -102,29 +102,57 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
+import org.springframework.context.MessageSource;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Locale;
 
 @Route("login")
 @CssImport("./styles/mainlayout.css")
 public class LoginView extends VerticalLayout {
+
+    private final MessageSource messageSource;
     private final RestTemplate restTemplate;
-    public LoginView() {
+
+    public LoginView(MessageSource messageSource) {
         this.restTemplate = new RestTemplate();
+        this.messageSource = messageSource;
 
 
-        TextField usernameField = new TextField("Username");
-        PasswordField passwordField = new PasswordField("Password");
+        // Language flags
+        Image englishFlag = new Image("images/united-kingdom.png", "English");
+        englishFlag.addClickListener(event -> changeLanguage(new Locale("en")));
+        Image koreanFlag = new Image("images/south-korea.png", "Korean");
+        koreanFlag.addClickListener(event -> changeLanguage(new Locale("ko")));
+        Image arabicFlag = new Image("images/arabic.png", "Arabic");
+        arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
+        Image finnishFlag = new Image("images/finland.png", "Finnish");
+        finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
+
+        englishFlag.setHeight("30px");
+        englishFlag.setWidth("30px");
+        koreanFlag.setHeight("30px");
+        koreanFlag.setWidth("30px");
+        arabicFlag.setHeight("30px");
+        arabicFlag.setWidth("30px");
+        finnishFlag.setHeight("30px");
+        finnishFlag.setWidth("30px");
+
+        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag);
+
+        TextField usernameField = new TextField(messageSource.getMessage("username.label", null, getLocale()));
+        PasswordField passwordField = new PasswordField(messageSource.getMessage("password.label", null, getLocale()));
         usernameField.addClassName("field");
         passwordField.addClassName("field");
 
         H2 h2 = new H2();
-        h2.setText("Your Easy Path To Financial Freedom .");
+        h2.setText(messageSource.getMessage("welcome.message", null, getLocale()));
         h2.setWidth("max-content");
 
-        Button loginButton = new Button("Login", event -> loginUser(usernameField.getValue(), passwordField.getValue()));
+        Button loginButton = new Button(messageSource.getMessage("login.button", null, getLocale()), event -> loginUser(usernameField.getValue(), passwordField.getValue()));
         loginButton.addClassName("transaction-btn");
-        RouterLink registerLink = new RouterLink("Don't have an account? Register here.", RegisterationView.class);
+        RouterLink registerLink = new RouterLink(messageSource.getMessage("register.link", null, getLocale()), RegisterationView.class);
 
         Image logo = new Image("images/easybank_logo.jpg", "Company Logo");
         logo.setHeight("200px");
@@ -140,8 +168,13 @@ public class LoginView extends VerticalLayout {
         layoutRow.add(logo, h2);
         layoutColumn.add(usernameField, passwordField, loginButton, registerLink);
 
-        main.add(layoutRow, layoutColumn);
+        main.add(layoutRow, layoutColumn, languageLayout);
         add(main);
+    }
+
+    private void changeLanguage(Locale locale) {
+        VaadinSession.getCurrent().setLocale(locale);
+        getUI().ifPresent(ui -> ui.getPage().reload());
     }
 
     private void loginUser(String username, String password) {
