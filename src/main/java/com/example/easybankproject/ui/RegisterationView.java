@@ -47,6 +47,8 @@ public class RegisterationView extends Composite<VerticalLayout> {
         arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
         Image finnishFlag = new Image("images/finland.png", "Finnish");
         finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
+        Image japaneseFlag = new Image("images/japan.png", "Japanese");
+        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
 
         englishFlag.setHeight("30px");
         englishFlag.setWidth("30px");
@@ -56,8 +58,10 @@ public class RegisterationView extends Composite<VerticalLayout> {
         arabicFlag.setWidth("30px");
         finnishFlag.setHeight("30px");
         finnishFlag.setWidth("30px");
+        japaneseFlag.setHeight("30px");
+        japaneseFlag.setWidth("30px");
 
-        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag);
+        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag, japaneseFlag);
 
         TextField username = new TextField(messageSource.getMessage("username.label", null, getLocale()));
         TextField firstname = new TextField(messageSource.getMessage("firstname.label", null, getLocale()));
