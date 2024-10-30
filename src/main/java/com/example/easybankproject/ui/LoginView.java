@@ -131,6 +131,8 @@ public class LoginView extends VerticalLayout {
         finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
         Image japaneseFlag = new Image("images/japan.png", "Japanese");
         japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
+        Image spanishFlag = new Image("images/spanish.png", "Spanish");
+        spanishFlag.addClickListener(event -> changeLanguage(new Locale("es")));
 
         englishFlag.setHeight("30px");
         englishFlag.setWidth("30px");
@@ -142,6 +144,8 @@ public class LoginView extends VerticalLayout {
         finnishFlag.setWidth("30px");
         japaneseFlag.setHeight("30px");
         japaneseFlag.setWidth("30px");
+        spanishFlag.setHeight("30px");
+        spanishFlag.setWidth("30px");
 
         HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag);
 
