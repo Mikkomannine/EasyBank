@@ -129,10 +129,10 @@ public class LoginView extends VerticalLayout {
         arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
         Image finnishFlag = new Image("images/finland.png", "Finnish");
         finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
-        Image japaneseFlag = new Image("images/japan.png", "Japanese");
-        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
         Image spanishFlag = new Image("images/spanish.png", "Spanish");
         spanishFlag.addClickListener(event -> changeLanguage(new Locale("es")));
+        Image japaneseFlag = new Image("images/japan.png", "Japanese");
+        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
 
         englishFlag.setHeight("30px");
         englishFlag.setWidth("30px");
@@ -142,12 +142,13 @@ public class LoginView extends VerticalLayout {
         arabicFlag.setWidth("30px");
         finnishFlag.setHeight("30px");
         finnishFlag.setWidth("30px");
-        japaneseFlag.setHeight("30px");
-        japaneseFlag.setWidth("30px");
         spanishFlag.setHeight("30px");
         spanishFlag.setWidth("30px");
+        japaneseFlag.setHeight("30px");
+        japaneseFlag.setWidth("30px");
 
-        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag);
+
+        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag, spanishFlag, japaneseFlag);
 
         TextField usernameField = new TextField(messageSource.getMessage("username.label", null, getLocale()));
         PasswordField passwordField = new PasswordField(messageSource.getMessage("password.label", null, getLocale()));
@@ -189,6 +190,10 @@ public class LoginView extends VerticalLayout {
         String url = "http://localhost:8080/api/user/login";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Locale locale = VaadinSession.getCurrent().getLocale();
+        headers.set("Accept-Language", locale.getLanguage());
+
         String jsonPayload = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
         HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
 
@@ -206,10 +211,10 @@ public class LoginView extends VerticalLayout {
                 System.out.println("Token set in session: " + session.getAttribute("token"));
                 System.out.println("Username set in session: " + session.getAttribute("username"));
 
-                Notification.show("Login successful!");
+                Notification.show(messageSource.getMessage("login.success", null, getLocale()));
                 getUI().ifPresent(ui -> ui.navigate("main"));
             } else {
-                Notification.show("Login failed. Please check your username and password.");
+                Notification.show(messageSource.getMessage("login.failed", null, getLocale()));
             }
 
         } catch (Exception e) {

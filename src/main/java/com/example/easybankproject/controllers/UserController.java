@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/user")
@@ -37,8 +38,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        String result = userService.registerUser(user);
+    public ResponseEntity<String> registerUser(@RequestBody User user, @RequestHeader("Accept-Language") Locale locale) {
+        String result = userService.registerUser(user, locale);
 
         if (result == null || result.equals("Username already exists.")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Username already exists.");
@@ -47,8 +48,8 @@ public class UserController {
     }
 
    @PostMapping("/login")
-   public ResponseEntity<String> loginUser(@RequestBody User user) {
-       String result = userService.loginUser(user);
+   public ResponseEntity<String> loginUser(@RequestBody User user, @RequestHeader("Accept-Language") Locale locale) {
+       String result = userService.loginUser(user, locale);
        if (result == null || result.equals("Invalid username or password.")) {
            return ResponseEntity
                    .status(HttpStatus.UNAUTHORIZED)

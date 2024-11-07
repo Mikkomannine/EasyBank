@@ -47,11 +47,10 @@ public class RegisterationView extends Composite<VerticalLayout> {
         arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
         Image finnishFlag = new Image("images/finland.png", "Finnish");
         finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
-        Image japaneseFlag = new Image("images/japan.png", "Japanese");
-        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
         Image spanishFlag = new Image("images/spanish.png", "Spanish");
         spanishFlag.addClickListener(event -> changeLanguage(new Locale("es")));
-
+        Image japaneseFlag = new Image("images/japan.png", "Japanese");
+        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
 
         englishFlag.setHeight("30px");
         englishFlag.setWidth("30px");
@@ -61,13 +60,11 @@ public class RegisterationView extends Composite<VerticalLayout> {
         arabicFlag.setWidth("30px");
         finnishFlag.setHeight("30px");
         finnishFlag.setWidth("30px");
-        japaneseFlag.setHeight("30px");
-        japaneseFlag.setWidth("30px");
         spanishFlag.setHeight("30px");
         spanishFlag.setWidth("30px");
+        japaneseFlag.setHeight("30px");
 
-
-        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag, japaneseFlag);
+        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag, spanishFlag, japaneseFlag);
 
         TextField username = new TextField(messageSource.getMessage("username.label", null, getLocale()));
         TextField firstname = new TextField(messageSource.getMessage("firstname.label", null, getLocale()));
@@ -130,6 +127,9 @@ public class RegisterationView extends Composite<VerticalLayout> {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Locale locale = VaadinSession.getCurrent().getLocale();
+        headers.set("Accept-Language", locale.getLanguage());
 
         HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
 

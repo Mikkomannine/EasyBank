@@ -9,8 +9,6 @@ import lombok.Setter;
 @Getter
 @Table(name = "user")
 public class User {
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int user_id;
@@ -21,6 +19,4 @@ public class User {
     private int phonenumber;
     private String firstname;
     private String lastname;
-
-
 }

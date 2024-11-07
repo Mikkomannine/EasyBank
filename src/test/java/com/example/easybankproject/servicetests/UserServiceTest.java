@@ -8,15 +8,21 @@ import com.example.easybankproject.services.UserService;
 import com.example.easybankproject.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Locale;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-public class UserServiceTest {
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -33,86 +39,103 @@ public class UserServiceTest {
     @Mock
     private BankAccountService bankAccountService;
 
+    @Mock
+    private MessageSource messageSource;
+
     @InjectMocks
     private UserService userService;
 
     private User user;
+    private Locale locale;
 
     @BeforeEach
-    public void setup() {
-        MockitoAnnotations.openMocks(this);
-
+    void setUp() {
         user = new User();
-        user.setUsername("testuser");
-        user.setPassword("password");
+        user.setUsername("testUser");
+        user.setPassword("testPassword");
+        user.setEmail("test@example.com");
+        user.setAddress("123 Test St");
+        user.setPhonenumber(123456789);
+        user.setFirstname("Test");
+        user.setLastname("User");
+
+        locale = Locale.ENGLISH;
     }
 
     @Test
-    public void testGetUserData() {
-        // Arrange
-        String token = "validToken";
-        when(jwtUtil.extractUsername(token)).thenReturn("testuser");
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
+    void testGetUserData_Success() {
+        String token = "test-token";
+        when(jwtUtil.extractUsername(token)).thenReturn("testUser");
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
 
-        // Act
         User result = userService.getUserData(token);
 
-        // Assert
         assertEquals(user, result);
+        verify(jwtUtil).extractUsername(token);
+        verify(userRepository).findByUsername("testUser");
     }
 
     @Test
-    public void testUpdateUserData() {
-        // Arrange
-        String token = "validToken";
+    void testUpdateUserData_Success() {
+        String token = "test-token";
         User updatedUser = new User();
-        updatedUser.setEmail("newemail@example.com");
-        updatedUser.setAddress("New Address");
-        updatedUser.setPhonenumber(1234567890);
-        updatedUser.setFirstname("NewFirstName");
-        updatedUser.setLastname("NewLastName");
+        updatedUser.setEmail("updated@example.com");
+        updatedUser.setAddress("456 Updated St");
+        updatedUser.setPhonenumber(987654321);
+        updatedUser.setFirstname("UpdatedFirstName");
+        updatedUser.setLastname("UpdatedLastName");
 
-        when(jwtUtil.extractUsername(token)).thenReturn("testuser");
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
+        when(jwtUtil.extractUsername(token)).thenReturn("testUser");
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
-        // Act
         User result = userService.updateUserData(token, updatedUser);
 
-        // Assert
-        assertEquals("newemail@example.com", result.getEmail());
-        assertEquals("New Address", result.getAddress());
-        assertEquals(1234567890, result.getPhonenumber());
-        assertEquals("NewFirstName", result.getFirstname());
-        assertEquals("NewLastName", result.getLastname());
-        verify(userRepository, times(1)).save(user);
+        assertEquals("updated@example.com", result.getEmail());
+        assertEquals("456 Updated St", result.getAddress());
+        assertEquals(987654321, result.getPhonenumber());
+        assertEquals("UpdatedFirstName", result.getFirstname());
+        assertEquals("UpdatedLastName", result.getLastname());
+        verify(userRepository).save(user);
     }
 
     @Test
-    public void testRegisterUserSuccess() {
-        // Arrange
-        when(userRepository.findByUsername("testuser")).thenReturn(null);
-        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-        when(jwtUtil.generateToken("testuser")).thenReturn("generatedToken");
+    void testUpdateUserData_UserNotFound() {
+        String token = "test-token";
+        User updatedUser = new User();
+        when(jwtUtil.extractUsername(token)).thenReturn("testUser");
+        when(userRepository.findByUsername("testUser")).thenReturn(null);
 
-        // Act
-        String result = userService.registerUser(user);
+        User result = userService.updateUserData(token, updatedUser);
 
-        // Assert
-        assertEquals("generatedToken", result);
-        verify(userRepository, times(1)).save(user);
-        verify(bankAccountService, times(1)).createBankAccount(user);
-        verify(notificationService, times(1)).createNotification(user, null, "testuser has registered successfully.");
+        assertNull(result);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    public void testRegisterUserUsernameExists() {
-        // Arrange
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
+    void testRegisterUser_Success() {
+        when(userRepository.findByUsername("testUser")).thenReturn(null);
+        when(passwordEncoder.encode("testPassword")).thenReturn("encodedPassword");
+        when(jwtUtil.generateToken("testUser")).thenReturn("generated-jwt-token");
+        when(messageSource.getMessage("register.notification", null, locale)).thenReturn("has successfully registered.");
 
-        // Act
-        String result = userService.registerUser(user);
+        String token = userService.registerUser(user, locale);
 
-        // Assert
+        assertEquals("generated-jwt-token", token);
+        verify(userRepository).save(user);
+        verify(passwordEncoder).encode("testPassword");
+        verify(bankAccountService).createBankAccount(user);
+        verify(notificationService).createNotification(user, null, "testUser has successfully registered.");
+    }
+
+    @Test
+    void testRegisterUser_UsernameExists() {
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
+        when(messageSource.getMessage("error.username.exists", null, "Username already exists.", locale))
+                .thenReturn("Username already exists.");
+
+        String result = userService.registerUser(user, locale);
+
         assertEquals("Username already exists.", result);
         verify(userRepository, never()).save(any(User.class));
         verify(bankAccountService, never()).createBankAccount(any(User.class));
@@ -120,30 +143,30 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testLoginUserSuccess() {
-        // Arrange
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(passwordEncoder.matches("password", "password")).thenReturn(true);
-        when(jwtUtil.generateToken("testuser")).thenReturn("generatedToken");
+    void testLoginUser_Success() {
+        User existingUser = new User();
+        existingUser.setUsername("testUser");
+        existingUser.setPassword("encodedPassword");
 
-        // Act
-        String result = userService.loginUser(user);
+        when(userRepository.findByUsername("testUser")).thenReturn(existingUser);
+        when(passwordEncoder.matches("testPassword", "encodedPassword")).thenReturn(true);
+        when(jwtUtil.generateToken("testUser")).thenReturn("generated-jwt-token");
+        when(messageSource.getMessage("login.notification", null, locale)).thenReturn("has logged in.");
 
-        // Assert
-        assertEquals("generatedToken", result);
-        verify(notificationService, times(1)).createNotification(user, null, "testuser has logged in.");
+        String token = userService.loginUser(user, locale);
+
+        assertEquals("generated-jwt-token", token);
+        verify(notificationService).createNotification(existingUser, null, "testUser has logged in.");
     }
 
     @Test
-    public void testLoginUserInvalidCredentials() {
-        // Arrange
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(passwordEncoder.matches("password", "password")).thenReturn(false);
+    void testLoginUser_InvalidCredentials() {
+        when(userRepository.findByUsername("testUser")).thenReturn(null);
+        when(messageSource.getMessage("error.invalid.credentials", null, "Invalid username or password.", locale))
+                .thenReturn("Invalid username or password.");
 
-        // Act
-        String result = userService.loginUser(user);
+        String result = userService.loginUser(user, locale);
 
-        // Assert
         assertEquals("Invalid username or password.", result);
         verify(jwtUtil, never()).generateToken(anyString());
         verify(notificationService, never()).createNotification(any(User.class), any(), anyString());
