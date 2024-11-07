@@ -187,3 +187,9 @@
     align-items: center;
     justify-content: center;
 }
+
+.language-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

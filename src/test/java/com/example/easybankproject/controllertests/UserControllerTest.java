@@ -12,6 +12,9 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.Locale;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -49,9 +52,7 @@ public class UserControllerTest {
         user.setPhonenumber(123456789);
         user.setFirstname("Test");
         user.setLastname("User");
-
     }
-
 
     @Test
     public void testGetUserDataSuccess() throws Exception {
@@ -91,11 +92,9 @@ public class UserControllerTest {
 
     @Test
     public void testUpdateUserDataUserNotFound() throws Exception {
-        // Arrange
         String token = "Bearer validToken";
         when(userService.updateUserData("validToken", user)).thenReturn(null);
 
-        // Act & Assert
         String jsonRequest = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(put("/api/user/update/me")
@@ -104,30 +103,29 @@ public class UserControllerTest {
                         .content(jsonRequest))
                 .andExpect(status().isNotFound());
     }
+
     @Test
     public void testRegisterUserSuccess() throws Exception {
-        // Arrange
-        when(userService.registerUser(any(User.class))).thenReturn("User registered successfully");
+        when(userService.registerUser(any(User.class), any(Locale.class))).thenReturn("User registered successfully");
 
-        // Act & Assert
         String jsonRequest = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(post("/api/user/register")
+                        .header("Accept-Language", "en") // Set the Accept-Language header
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isOk())
                 .andExpect(content().string("User registered successfully"));
     }
 
-
     @Test
     public void testRegisterUserAlreadyExists() throws Exception {
-
-        when(userService.registerUser(user)).thenReturn("Username already exists.");
+        when(userService.registerUser(any(User.class), any(Locale.class))).thenReturn("Username already exists.");
 
         String jsonRequest = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(post("/api/user/register")
+                        .header("Accept-Language", "en") // Set the Accept-Language header
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isUnauthorized())
@@ -136,16 +134,14 @@ public class UserControllerTest {
 
     @Test
     public void testLoginUserSuccess() throws Exception {
-        // Arrange
         user.setUsername("testuser");
         user.setPassword("password123");
-        when(userService.loginUser(any(User.class))).thenReturn("ValidToken123");
+        when(userService.loginUser(any(User.class), any(Locale.class))).thenReturn("ValidToken123");
 
-        // Act & Assert
         String jsonRequest = objectMapper.writeValueAsString(user);
-        System.out.println(jsonRequest);
 
         mockMvc.perform(post("/api/user/login")
+                        .header("Accept-Language", "en") // Set the Accept-Language header
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isOk())
@@ -153,15 +149,14 @@ public class UserControllerTest {
                 .andExpect(content().string("ValidToken123"));
     }
 
-
     @Test
     public void testLoginUserInvalidPassword() throws Exception {
-
-        when(userService.loginUser(user)).thenReturn("Invalid username or password.");
+        when(userService.loginUser(any(User.class), any(Locale.class))).thenReturn("Invalid username or password.");
 
         String jsonRequest = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(post("/api/user/login")
+                        .header("Accept-Language", "en") // Set the Accept-Language header
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isUnauthorized())

@@ -9,12 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -32,6 +34,9 @@ public class TransactionControllerTest {
 
     @MockBean
     private TransactionService transactionService;
+
+    @MockBean
+    private MessageSource messageSource; // Mock MessageSource for locale-specific messages
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -52,10 +57,15 @@ public class TransactionControllerTest {
     @WithMockUser(username = "testuser", roles = {"USER"})
     public void testCreateTransaction_Success() throws Exception {
 
-        when(transactionService.createTransaction(any(Transaction.class)))
+        // Mock the messageSource to return the expected locale-specific message
+        when(messageSource.getMessage("created.transaction", null, Locale.ENGLISH))
+                .thenReturn("Transaction created successfully");
+
+        when(transactionService.createTransaction(any(Transaction.class), any(Locale.class)))
                 .thenReturn("Transaction created successfully");
 
         mockMvc.perform(post("/api/transaction/create")
+                        .header("Accept-Language", "en") // Set the Accept-Language header to English
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(transaction))
                         .with(csrf()))  // Add a CSRF token to the request
@@ -63,20 +73,26 @@ public class TransactionControllerTest {
                 .andExpect(content().string("Transaction created successfully"));
     }
 
-
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})
     public void testCreateTransaction_Failure() throws Exception {
-        when(transactionService.createTransaction(any(Transaction.class)))
+
+        // Mock the messageSource to return the expected locale-specific message for a failed transaction
+        when(messageSource.getMessage("created.transaction", null, Locale.ENGLISH))
+                .thenReturn("Transaction created successfully");
+
+        when(transactionService.createTransaction(any(Transaction.class), any(Locale.class)))
                 .thenReturn("Transaction creation failed");
 
         mockMvc.perform(post("/api/transaction/create")
-                        .with(csrf())
+                        .header("Accept-Language", "en") // Set the Accept-Language header to English
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(transaction)))
+                        .content(objectMapper.writeValueAsString(transaction))
+                        .with(csrf()))  // Add a CSRF token to the request
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Transaction creation failed"));
     }
+
 
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})

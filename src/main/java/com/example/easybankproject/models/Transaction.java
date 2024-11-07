@@ -23,6 +23,24 @@ public class Transaction {
     private int senderAccountId;
 
     private double amount;
+
     private LocalDateTime timestamp;
+
     private String message;
+
+    @Column(name = "message_ja")
+    private String messageJapanese;
+
+    @Column(name = "message_ko")
+    private String messageKorean;
+
+    @Column(name = "message_ar")
+    private String messageArabic;
+
+    @Column(name = "message_es")
+    private String messageSpanish;
+
+    @Column(name = "message_fin")
+    private String messageFinnish;
+
 }

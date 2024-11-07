@@ -6,12 +6,19 @@ import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.Transaction;
 import com.example.easybankproject.utils.JwtUtil;
+import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+
+import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
+
 
 @Service
 public class TransactionService {
@@ -31,7 +38,11 @@ public class TransactionService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public String createTransaction(Transaction transaction) {
+    @Autowired
+    private MessageSource messageSource;  // Inject MessageSource for localization
+
+
+    public String createTransaction(Transaction transaction, Locale locale) {
         Optional<BankAccount> senderAccount = bankAccountRepository.findByBankAccountId(transaction.getSenderAccountId());
         Optional<BankAccount> receiverAccount = bankAccountRepository.findByBankAccountId(transaction.getReceiverAccountId());
 
@@ -50,10 +61,15 @@ public class TransactionService {
         transaction.setTimestamp(LocalDateTime.now());
         transactionRepository.save(transaction);
 
+        notificationService.createNotification(senderAccount.get().getUser(), transaction, transaction.getAmount() + " € " + messageSource.getMessage("to.notification", null, locale) + transaction.getReceiverAccountId());
+        notificationService.createNotification(receiverAccount.get().getUser(), transaction, transaction.getAmount() + " € " + messageSource.getMessage("from.notification", null, locale) + transaction.getSenderAccountId());
+
+        System.out.println("NOTIFICATION LOCALE PASSED IN AS PARAMETER FROM UI:" + locale);
+        /*
         notificationService.createNotification(senderAccount.get().getUser(), transaction, "You sent " + transaction.getAmount() + " € to account " + transaction.getReceiverAccountId());
         notificationService.createNotification(receiverAccount.get().getUser(), transaction, "You received " + transaction.getAmount() + " € from account " + transaction.getSenderAccountId());
-
-        return "Transaction created with ID: " + transaction.getTransactionId();
+*/
+        return messageSource.getMessage("created.transaction", null, locale) + transaction.getTransactionId();
     }
     public int getSenderId(String token) {
         String username = jwtUtil.extractUsername(token);
