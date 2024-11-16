@@ -38,6 +38,9 @@ public class TransactionController {
 
     @GetMapping("/history")
     public ResponseEntity<List<Transaction>> getTransactions(@RequestHeader("Authorization") String token) {
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         String jwtToken = token.substring(7);
         List<Transaction> transactions = transactionService.getTransactions(jwtToken);
         return ResponseEntity.ok(transactions);

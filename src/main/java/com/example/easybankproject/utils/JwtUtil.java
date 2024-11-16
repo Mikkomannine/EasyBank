@@ -1,8 +1,8 @@
 package com.example.easybankproject.utils;
 
-import com.example.easybankproject.models.Transaction;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
-public class JwtUtil extends Transaction {
+public class JwtUtil {
 
     private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
@@ -24,7 +24,10 @@ public class JwtUtil extends Transaction {
                 .compact();
     }
 
-    public boolean validateToken(String token, String username) {
+    public boolean validateToken(String token, String username) throws Exception {
+        if (token == null) {
+            throw new Exception();
+        }
         String tokenUsername = extractUsername(token);
         return (tokenUsername.equals(username) && !isTokenExpired(token));
     }

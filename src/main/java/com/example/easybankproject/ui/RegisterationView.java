@@ -2,6 +2,7 @@
 
 package com.example.easybankproject.ui;
 
+import com.example.easybankproject.utils.JwtUtil;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -18,6 +19,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
+import io.jsonwebtoken.MalformedJwtException;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -38,6 +41,8 @@ public class RegisterationView extends Composite<VerticalLayout> {
         this.messageSource = messageSource;
         Locale currentLocale = VaadinSession.getCurrent().getLocale();
         System.out.println("Current Locale: " + currentLocale);
+        System.out.println(LocaleContextHolder.getLocale());
+
         // Language flags
         Image englishFlag = new Image("images/united-kingdom.png", "English");
         englishFlag.addClickListener(event -> changeLanguage(new Locale("en")));
@@ -119,36 +124,38 @@ public class RegisterationView extends Composite<VerticalLayout> {
         getUI().ifPresent(ui -> ui.getPage().reload());
     }
 
-    private void registerUser(String username, String password, String email, String firstname, String lastname, String phonenumber, String address) {
-        String url = "http://localhost:8080/api/user/register";
+   private void registerUser(String username, String password, String email, String firstname, String lastname, String phonenumber, String address) {
+       String url = "http://localhost:8080/api/user/register";
 
-        String jsonPayload = String.format("{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"firstname\":\"%s\",\"lastname\":\"%s\",\"phonenumber\":\"%s\",\"address\":\"%s\"}",
-                username, password, email, firstname, lastname, phonenumber, address);
+       String jsonPayload = String.format("{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"firstname\":\"%s\",\"lastname\":\"%s\",\"phonenumber\":\"%s\",\"address\":\"%s\"}",
+               username, password, email, firstname, lastname, phonenumber, address);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+       HttpHeaders headers = new HttpHeaders();
+       headers.setContentType(MediaType.APPLICATION_JSON);
 
-        Locale locale = VaadinSession.getCurrent().getLocale();
-        headers.set("Accept-Language", locale.getLanguage());
+       Locale locale = VaadinSession.getCurrent().getLocale();
+       headers.set("Accept-Language", locale.getLanguage());
 
-        HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
+       HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
 
-        try {
-            if (username.isEmpty() || password.isEmpty()) {
-                Notification.show("Please fill in all fields");
-                return;
-            }
-            System.out.println(jsonPayload);
-            String token = restTemplate.postForObject(url, request, String.class);
-            Notification.show(token);
+       try {
+           if (username.isEmpty() || password.isEmpty()) {
+               Notification.show(messageSource.getMessage("error.empty.fields", null, locale));
+               return;
+           }
+           System.out.println(jsonPayload);
+           String token = restTemplate.postForObject(url, request, String.class);
 
-            VaadinSession.getCurrent().setAttribute("token", token);
-            VaadinSession.getCurrent().setAttribute("username", username);
+           System.out.println("Token: " + token);
+           Notification.show(token);
 
-            getUI().ifPresent(ui -> ui.navigate("main"));
+           VaadinSession.getCurrent().setAttribute("token", token);
+           VaadinSession.getCurrent().setAttribute("username", username);
 
-        } catch (Exception e) {
-            Notification.show("Error: " + e.getMessage());
-        }
-    }
+           getUI().ifPresent(ui -> ui.navigate("main"));
+
+       } catch (Exception e) {
+           Notification.show(messageSource.getMessage("error.username.exists", null, locale));
+       }
+   }
 }

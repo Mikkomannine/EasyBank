@@ -12,8 +12,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
 
 import java.util.Locale;
@@ -23,12 +28,12 @@ import java.util.Locale;
 public class MainLayout extends AppLayout {
 
     private final MessageSource messageSource;
-    private Button logoutButton; // Store logout button
-    private RouterLink profileLink; // Store profile link
-    private RouterLink homeLink; // Store home link
+    private Button logoutButton;
+    private RouterLink profileLink;
+    private RouterLink homeLink;
 
     public MainLayout(MessageSource messageSource) {
-        this.messageSource = messageSource; // Initialize MessageSource
+        this.messageSource = messageSource;
         setPrimarySection(Section.DRAWER);
         addNavBarContent();
         addDrawerContent();
@@ -64,7 +69,6 @@ public class MainLayout extends AppLayout {
         drawerLayout.add(homeLink);
         drawerLayout.add(logoutButton);
 
-        // Language flags
         VerticalLayout languageLayout = createLanguageFlags();
         languageLayout.addClassName("language-layout");
         drawerLayout.add(languageLayout);
@@ -76,15 +80,20 @@ public class MainLayout extends AppLayout {
         return link;
     }
 
+
+
     private Button createLogoutButton() {
         Button button = new Button(getMessage("logout.button"), event -> {
-            VaadinSession.getCurrent().setAttribute("token", null);
-            VaadinSession.getCurrent().getSession().invalidate();
+            // Navigate to the login view
             getUI().ifPresent(ui -> ui.navigate("login"));
+            VaadinSession.getCurrent().setAttribute("token", null);
         });
         button.addClassNames("logout-btn-hover", "color-5");
         return button;
     }
+
+
+
 
     private VerticalLayout createLanguageFlags() {
         Image englishFlag = new Image("images/united-kingdom.png", getMessage("English"));
@@ -125,12 +134,11 @@ public class MainLayout extends AppLayout {
 
     private void changeLanguage(Locale locale) {
         VaadinSession.getCurrent().setLocale(locale);
-        updateUIText(); // Update the text of UI components
+        updateUIText();
         getUI().ifPresent(ui -> ui.getPage().reload());
     }
 
     private void updateUIText() {
-        // Update the text of the buttons and links
         logoutButton.setText(getMessage("logout.button"));
         profileLink.setText(getMessage("profile.page"));
         homeLink.setText(getMessage("home.page"));

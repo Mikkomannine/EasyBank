@@ -6,10 +6,8 @@ import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.Transaction;
 import com.example.easybankproject.utils.JwtUtil;
-import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 
 @Service
@@ -47,10 +44,10 @@ public class TransactionService {
         Optional<BankAccount> receiverAccount = bankAccountRepository.findByBankAccountId(transaction.getReceiverAccountId());
 
         if (senderAccount.isEmpty() || receiverAccount.isEmpty()) {
-            return "Sender or receiver account not found.";
+            return messageSource.getMessage("sender.receiver.notfound", null, locale);
         }
         if (senderAccount.get().getBalance().compareTo(BigDecimal.valueOf(transaction.getAmount())) < 0) {
-            return "Insufficient funds.";
+            return messageSource.getMessage("insufficient.funds", null, locale);
         }
 
         senderAccount.get().setBalance(senderAccount.get().getBalance().subtract(BigDecimal.valueOf(transaction.getAmount())));
@@ -65,10 +62,7 @@ public class TransactionService {
         notificationService.createNotification(receiverAccount.get().getUser(), transaction, transaction.getAmount() + " € " + messageSource.getMessage("from.notification", null, locale) + transaction.getSenderAccountId());
 
         System.out.println("NOTIFICATION LOCALE PASSED IN AS PARAMETER FROM UI:" + locale);
-        /*
-        notificationService.createNotification(senderAccount.get().getUser(), transaction, "You sent " + transaction.getAmount() + " € to account " + transaction.getReceiverAccountId());
-        notificationService.createNotification(receiverAccount.get().getUser(), transaction, "You received " + transaction.getAmount() + " € from account " + transaction.getSenderAccountId());
-*/
+
         return messageSource.getMessage("created.transaction", null, locale) + transaction.getTransactionId();
     }
     public int getSenderId(String token) {
@@ -78,6 +72,9 @@ public class TransactionService {
     }
 
     public List<Transaction> getTransactions(String token) {
+        if (token == null) {
+            return null;
+        }
         String username = jwtUtil.extractUsername(token);
         BankAccount bankAccount = bankAccountRepository.findByUser(userRepository.findByUsername(username)).orElseThrow(() -> new RuntimeException("User not found"));
         return transactionRepository.findAllBySenderAccountIdOrReceiverAccountId(bankAccount.getBankAccountId(), bankAccount.getBankAccountId());

@@ -26,8 +26,21 @@ public class JwtUtilTest {
     }
 
     @Test
-    public void testValidateToken() {
+    public void testValidateToken_Success() throws Exception {
         assertTrue(jwtUtil.validateToken(token, username));
+    }
+
+    @Test
+    public void testValidateToken_TokenNull() {
+        Exception exception = assertThrows(Exception.class, () -> {
+            jwtUtil.validateToken(null, username);
+        });
+        assertNotNull(exception);
+    }
+
+    @Test
+    public void testValidateToken_InvalidUsername() throws Exception {
+        assertFalse(jwtUtil.validateToken(token, "invaliduser"));
     }
 
     @Test
