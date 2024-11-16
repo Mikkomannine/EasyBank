@@ -113,7 +113,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testRegisterUser_Success() {
+    void testRegisterUser_Success() throws Exception {
         when(userRepository.findByUsername("testUser")).thenReturn(null);
         when(passwordEncoder.encode("testPassword")).thenReturn("encodedPassword");
         when(jwtUtil.generateToken("testUser")).thenReturn("generated-jwt-token");
@@ -131,16 +131,16 @@ class UserServiceTest {
     @Test
     void testRegisterUser_UsernameExists() {
         when(userRepository.findByUsername("testUser")).thenReturn(user);
-        when(messageSource.getMessage("error.username.exists", null, "Username already exists.", locale))
-                .thenReturn("Username already exists.");
 
-        String result = userService.registerUser(user, locale);
+        Exception exception = assertThrows(Exception.class, () -> {
+            userService.registerUser(user, locale);
+        });
 
-        assertEquals("Username already exists.", result);
         verify(userRepository, never()).save(any(User.class));
         verify(bankAccountService, never()).createBankAccount(any(User.class));
         verify(notificationService, never()).createNotification(any(User.class), any(), anyString());
     }
+
 
     @Test
     void testLoginUser_Success() {

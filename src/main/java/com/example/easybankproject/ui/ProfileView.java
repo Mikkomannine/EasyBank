@@ -48,9 +48,11 @@ public class ProfileView extends Composite<VerticalLayout> implements BeforeEnte
         String token = (String) VaadinSession.getCurrent().getAttribute("token");
         String username = (String) VaadinSession.getCurrent().getAttribute("username");
 
-        if (token == null || !jwtUtil.validateToken(token, username)) {
-            Notification.show(messageSource.getMessage("login.prompt", null, getLocale()));
-            event.rerouteTo(LoginView.class);
+        try {
+            jwtUtil.validateToken(token, username);
+        } catch (Exception e) {
+            Notification.show("Unauthorized access. Please log in.");
+            event.rerouteTo("login");
         }
         displayUserProfile();
     }

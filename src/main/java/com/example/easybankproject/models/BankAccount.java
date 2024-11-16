@@ -25,4 +25,6 @@ import java.sql.Timestamp;
 
         private BigDecimal balance;
 
+        public static final BigDecimal GBP_RATE = BigDecimal.valueOf(0.83);
+
     }

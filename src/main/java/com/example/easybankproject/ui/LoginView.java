@@ -100,6 +100,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.context.MessageSource;
@@ -114,6 +115,13 @@ public class LoginView extends VerticalLayout {
 
     private final MessageSource messageSource;
     private final RestTemplate restTemplate;
+
+    public TextField usernameField;
+
+    public PasswordField passwordField;
+
+    public Button loginButton;
+
 
     public LoginView(MessageSource messageSource) {
         this.restTemplate = new RestTemplate();
@@ -150,8 +158,8 @@ public class LoginView extends VerticalLayout {
 
         HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, koreanFlag, arabicFlag, finnishFlag, spanishFlag, japaneseFlag);
 
-        TextField usernameField = new TextField(messageSource.getMessage("username.label", null, getLocale()));
-        PasswordField passwordField = new PasswordField(messageSource.getMessage("password.label", null, getLocale()));
+        usernameField = new TextField(messageSource.getMessage("username.label", null, getLocale()));
+        passwordField = new PasswordField(messageSource.getMessage("password.label", null, getLocale()));
         usernameField.addClassName("field");
         passwordField.addClassName("field");
 
@@ -159,7 +167,7 @@ public class LoginView extends VerticalLayout {
         h2.setText(messageSource.getMessage("welcome.message", null, getLocale()));
         h2.setWidth("max-content");
 
-        Button loginButton = new Button(messageSource.getMessage("login.button", null, getLocale()), event -> loginUser(usernameField.getValue(), passwordField.getValue()));
+        loginButton = new Button(messageSource.getMessage("login.button", null, getLocale()), event -> loginUser(usernameField.getValue(), passwordField.getValue()));
         loginButton.addClassName("transaction-btn");
         RouterLink registerLink = new RouterLink(messageSource.getMessage("register.link", null, getLocale()), RegisterationView.class);
 
@@ -181,7 +189,7 @@ public class LoginView extends VerticalLayout {
         add(main);
     }
 
-    private void changeLanguage(Locale locale) {
+    public void changeLanguage(Locale locale) {
         VaadinSession.getCurrent().setLocale(locale);
         getUI().ifPresent(ui -> ui.getPage().reload());
     }
@@ -198,27 +206,23 @@ public class LoginView extends VerticalLayout {
         HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
 
         try {
+            if (username.isEmpty() || password.isEmpty()) {
+                Notification.show(messageSource.getMessage("error.empty.fields", null, locale));
+                return;
+            }
             ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
             System.out.println("Response: " + response);
             if (response.getStatusCode() == HttpStatus.OK) {
                 String token = response.getBody();
-
                 VaadinSession session = VaadinSession.getCurrent();
                 session.setAttribute("token", token);
                 session.setAttribute("username", username);
 
-                System.out.println("Session ID: " + session.getSession().getId());
-                System.out.println("Token set in session: " + session.getAttribute("token"));
-                System.out.println("Username set in session: " + session.getAttribute("username"));
-
                 Notification.show(messageSource.getMessage("login.success", null, getLocale()));
                 getUI().ifPresent(ui -> ui.navigate("main"));
-            } else {
-                Notification.show(messageSource.getMessage("login.failed", null, getLocale()));
             }
-
         } catch (Exception e) {
-            Notification.show("Error: " + e.getMessage());
+            Notification.show(messageSource.getMessage("login.error", null, getLocale()));
         }
     }
 }

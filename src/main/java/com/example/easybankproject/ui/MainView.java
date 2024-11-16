@@ -6,7 +6,6 @@ import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.Transaction;
 import com.example.easybankproject.services.TransactionService;
 import com.example.easybankproject.utils.JwtUtil;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -91,18 +90,23 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         getContent().addClassName("body");
 
     }
-
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        System.out.println("MainView beforeEnter");
         String token = (String) VaadinSession.getCurrent().getAttribute("token");
         String username = (String) VaadinSession.getCurrent().getAttribute("username");
-
-        if (token == null || !jwtUtil.validateToken(token, username)) {
-            Notification.show(messageSource.getMessage("login.prompt", null, getLocale()));
-            event.rerouteTo(LoginView.class);
+        System.out.println("Token: " + token);
+        System.out.println("Username: " + username);
+        try {
+            jwtUtil.validateToken(token, username);
+            changeLanguage(getLocale());
+            fetchBalance();
+        } catch (Exception e) {
+            Notification.show("Unauthorized access. Please log in.");
+            event.rerouteTo("login");
+            // reload ui
+            getUI().ifPresent(ui -> ui.getPage().reload());
         }
-        changeLanguage(getLocale());
-        fetchBalance();
     }
 
     private void changeLanguage(Locale locale) {
@@ -161,7 +165,11 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         H2 title = new H2(messageSource.getMessage("notifications.title", new Object[]{notificationsCount}, getLocale()));
         grid = new Grid<>(com.example.easybankproject.models.Notification.class);
         grid.setItems(notificationList);
-        grid.setColumns("content", "timestamp");
+        grid.removeAllColumns();
+        String content = messageSource.getMessage("content.title", null, getLocale());
+        String timestamp = messageSource.getMessage("timestamp.title", null, getLocale());
+        grid.addColumn(com.example.easybankproject.models.Notification::getContent).setHeader(content);
+        grid.addColumn(com.example.easybankproject.models.Notification::getTimestamp).setHeader(timestamp);
 
         grid.addComponentColumn(notification -> {
             Button deleteButton = new Button(messageSource.getMessage("delete.button", null, getLocale()));
@@ -226,11 +234,9 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
     private void fetchTransactions() {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("token");
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-
+            HttpHeaders headers = createHeaders(token);
             HttpEntity<String> entity = new HttpEntity<>(headers);
+
             ResponseEntity<Transaction[]> response = restTemplate.exchange(
                     "http://localhost:8080/api/transaction/history",
                     HttpMethod.GET,
@@ -241,96 +247,91 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             if (response.getStatusCode() == HttpStatus.OK) {
                 List<Transaction> transactions = Arrays.asList(response.getBody());
                 transactions.sort((t1, t2) -> t2.getTimestamp().compareTo(t1.getTimestamp()));
-                transactionGrid.setItems(transactions);
-                transactionGrid.setClassName("transactions-grid");
-
-                // Remove all columns:
-                transactionGrid.removeAllColumns();
-
-                transactionGrid.addColumn(Transaction::getTimestamp).setHeader(messageSource.getMessage("timestamp", null, getLocale())).setKey("timestamp");
-                transactionGrid.addColumn(Transaction::getSenderAccountId).setHeader(messageSource.getMessage("senderAccount", null, getLocale())).setKey("senderAccountId");
-                transactionGrid.addColumn(Transaction::getReceiverAccountId).setHeader(messageSource.getMessage("receiverAccount", null, getLocale())).setKey("receiverAccountId");
-                transactionGrid.addColumn(Transaction::getTransactionId).setHeader(messageSource.getMessage("transactionID", null, getLocale())).setKey("transactionId");
-                // Re-add all message columns (we'll remove specific ones based on locale in the next step)
-                transactionGrid.addColumn(Transaction::getMessage).setHeader("Message").setKey("message");
-                transactionGrid.addColumn(Transaction::getMessageJapanese).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageJapanese");
-                transactionGrid.addColumn(Transaction::getMessageKorean).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageKorean");
-                transactionGrid.addColumn(Transaction::getMessageArabic).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageArabic");
-                transactionGrid.addColumn(Transaction::getMessageSpanish).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageSpanish");
-                transactionGrid.addColumn(Transaction::getMessageFinnish).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageFinnish");
-
-                // Remove specific message columns based on the current locale
-                Locale locale = getLocale();
-                System.out.println("Locale Language: " + locale.getLanguage());
-
-                if (locale.getLanguage().equals("ja")) {
-                    removeColumnIfExists("messageArabic");
-                    removeColumnIfExists("messageKorean");
-                    removeColumnIfExists("messageSpanish");
-                    removeColumnIfExists("messageFinnish");
-                    removeColumnIfExists("message");
-                } else if (locale.getLanguage().equals("ko")) {
-                    removeColumnIfExists("messageArabic");
-                    removeColumnIfExists("messageJapanese");
-                    removeColumnIfExists("messageSpanish");
-                    removeColumnIfExists("messageFinnish");
-                    removeColumnIfExists("message");
-                } else if (locale.getLanguage().equals("ar")) {
-                    removeColumnIfExists("messageJapanese");
-                    removeColumnIfExists("messageKorean");
-                    removeColumnIfExists("messageSpanish");
-                    removeColumnIfExists("messageFinnish");
-                    removeColumnIfExists("message");
-                } else if (locale.getLanguage().equals("es")) {
-                    removeColumnIfExists("messageJapanese");
-                    removeColumnIfExists("messageKorean");
-                    removeColumnIfExists("messageArabic");
-                    removeColumnIfExists("messageFinnish");
-                    removeColumnIfExists("message");
-                } else if (locale.getLanguage().equals("fi")) {
-                    removeColumnIfExists("messageJapanese");
-                    removeColumnIfExists("messageKorean");
-                    removeColumnIfExists("messageArabic");
-                    removeColumnIfExists("messageSpanish");
-                    removeColumnIfExists("message");
-                } else {
-                    // Default case for non-specific languages, remove all language-specific message columns
-                    removeColumnIfExists("messageArabic");
-                    removeColumnIfExists("messageJapanese");
-                    removeColumnIfExists("messageKorean");
-                    removeColumnIfExists("messageSpanish");
-                    removeColumnIfExists("messageFinnish");
-                }
-
-                // Ensure the "amount" column is added only if it doesn't already exist
-                removeColumnIfExists("amount");
-                if (transactionGrid.getColumnByKey("amount") == null) {
-                    transactionGrid.addColumn(new ComponentRenderer<>(transaction -> {
-                        Div container = new Div();
-                        container.getStyle().set("padding", "10px");
-                        container.getStyle().set("border-radius", "5px");
-
-                        String amountPrefix = "";
-                        int currentAccountId = transactionService.getSenderId(token);
-                        if (transaction.getSenderAccountId() == currentAccountId) {
-                            container.getStyle().set("background-color", "#ffcccc");
-                            amountPrefix = "-";
-                        } else if (transaction.getReceiverAccountId() == currentAccountId) {
-                            container.getStyle().set("background-color", "#ccffcc");
-                            amountPrefix = "+";
-                        }
-
-                        container.setText(amountPrefix + transaction.getAmount() + " €");
-                        return container;
-                    })).setHeader(messageSource.getMessage("amount.header", null, getLocale())).setKey("amount");
-                }
+                updateTransactionGrid(transactions, token);
             }
         } catch (HttpServerErrorException e) {
             Notification.show(messageSource.getMessage("server.error", new Object[]{e.getMessage()}, getLocale()), 3000, Notification.Position.MIDDLE);
         }
     }
 
-    // Helper method to remove column if it exists
+    private HttpHeaders createHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        return headers;
+    }
+
+    private void updateTransactionGrid(List<Transaction> transactions, String token) {
+        transactionGrid.setItems(transactions);
+        transactionGrid.setClassName("transactions-grid");
+        transactionGrid.removeAllColumns();
+
+        addTransactionColumns();
+        removeLocaleSpecificColumns();
+        addAmountColumn(token);
+    }
+
+    private void addTransactionColumns() {
+        transactionGrid.addColumn(Transaction::getTimestamp).setHeader(messageSource.getMessage("timestamp", null, getLocale())).setKey("timestamp");
+        transactionGrid.addColumn(Transaction::getSenderAccountId).setHeader(messageSource.getMessage("senderAccount", null, getLocale())).setKey("senderAccountId");
+        transactionGrid.addColumn(Transaction::getReceiverAccountId).setHeader(messageSource.getMessage("receiverAccount", null, getLocale())).setKey("receiverAccountId");
+        transactionGrid.addColumn(Transaction::getTransactionId).setHeader(messageSource.getMessage("transactionID", null, getLocale())).setKey("transactionId");
+        transactionGrid.addColumn(Transaction::getMessage).setHeader("Message").setKey("message");
+        transactionGrid.addColumn(Transaction::getMessageJapanese).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageJapanese");
+        transactionGrid.addColumn(Transaction::getMessageKorean).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageKorean");
+        transactionGrid.addColumn(Transaction::getMessageArabic).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageArabic");
+        transactionGrid.addColumn(Transaction::getMessageSpanish).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageSpanish");
+        transactionGrid.addColumn(Transaction::getMessageFinnish).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageFinnish");
+    }
+
+    private void removeLocaleSpecificColumns() {
+        Locale locale = getLocale();
+        String language = locale.getLanguage();
+
+        if (language.equals("ja")) {
+            removeColumns("messageArabic", "messageKorean", "messageSpanish", "messageFinnish", "message");
+        } else if (language.equals("ko")) {
+            removeColumns("messageArabic", "messageJapanese", "messageSpanish", "messageFinnish", "message");
+        } else if (language.equals("ar")) {
+            removeColumns("messageJapanese", "messageKorean", "messageSpanish", "messageFinnish", "message");
+        } else if (language.equals("es")) {
+            removeColumns("messageJapanese", "messageKorean", "messageArabic", "messageFinnish", "message");
+        } else if (language.equals("fi")) {
+            removeColumns("messageJapanese", "messageKorean", "messageArabic", "messageSpanish", "message");
+        } else {
+            removeColumns("messageArabic", "messageJapanese", "messageKorean", "messageSpanish", "messageFinnish");
+        }
+    }
+
+    private void removeColumns(String... columnKeys) {
+        for (String columnKey : columnKeys) {
+            removeColumnIfExists(columnKey);
+        }
+    }
+
+    private void addAmountColumn(String token) {
+        removeColumnIfExists("amount");
+        if (transactionGrid.getColumnByKey("amount") == null) {
+            transactionGrid.addColumn(new ComponentRenderer<>(transaction -> {
+                Div container = new Div();
+                container.getStyle().set("padding", "10px");
+                container.getStyle().set("border-radius", "5px");
+
+                String amountPrefix = "";
+                int currentAccountId = transactionService.getSenderId(token);
+                if (transaction.getSenderAccountId() == currentAccountId) {
+                    container.getStyle().set("background-color", "#ffcccc");
+                    amountPrefix = "-";
+                } else if (transaction.getReceiverAccountId() == currentAccountId) {
+                    container.getStyle().set("background-color", "#ccffcc");
+                    amountPrefix = "+";
+                }
+
+                container.setText(amountPrefix + transaction.getAmount() + " €");
+                return container;
+            })).setHeader(messageSource.getMessage("amount.header", null, getLocale())).setKey("amount");
+        }
+    }
+
     private void removeColumnIfExists(String columnKey) {
         if (transactionGrid.getColumnByKey(columnKey) != null) {
             transactionGrid.removeColumnByKey(columnKey);
@@ -356,7 +357,9 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
         try {
             BankAccount bankAccount = restTemplate.exchange(url, HttpMethod.GET, request, BankAccount.class).getBody();
-            balanceParagraph.setText("" + bankAccount.getBalance() + " €");
+
+            double balance = bankAccount.getBalance().doubleValue();
+            balanceParagraph.setText("" + balance + " €");
         } catch (Exception e) {
             Notification.show(messageSource.getMessage("error.message", new Object[]{e.getMessage()}, getLocale()));
         }

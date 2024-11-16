@@ -1,13 +1,19 @@
 package com.example.easybankproject.controllers;
 
+
+
 import com.example.easybankproject.models.User;
 import com.example.easybankproject.services.UserService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.*;
 import java.util.Locale;
@@ -18,6 +24,10 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private StringHttpMessageConverter stringHttpMessageConverter;
+    @Autowired
+    private MessageSource messageSource;
 
     @GetMapping("/me")
     public ResponseEntity<User> getUserData(@RequestHeader("Authorization") String token) {
@@ -39,28 +49,29 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user, @RequestHeader("Accept-Language") Locale locale) {
-        String result = userService.registerUser(user, locale);
-
-        if (result == null || result.equals("Username already exists.")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Username already exists.");
+        try {
+            String result = userService.registerUser(user, locale);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        return ResponseEntity.ok(result);
     }
 
-   @PostMapping("/login")
-   public ResponseEntity<String> loginUser(@RequestBody User user, @RequestHeader("Accept-Language") Locale locale) {
-       String result = userService.loginUser(user, locale);
-       if (result == null || result.equals("Invalid username or password.")) {
-           return ResponseEntity
-                   .status(HttpStatus.UNAUTHORIZED)
-                   .contentType(MediaType.TEXT_PLAIN)
-                   .body("Invalid username or password.");
-       }
-       return ResponseEntity
-               .ok()
-               .contentType(MediaType.TEXT_PLAIN)
-               .body(result);
-   }
+    @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestBody User user, @RequestHeader("Accept-Language") Locale locale) {
+        String result = userService.loginUser(user, locale);
+        if (result == null || result.equals("Invalid username or password.")) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Invalid username or password.");
+        }
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(result);
+    }
 
 }
+
 

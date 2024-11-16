@@ -9,14 +9,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -111,7 +112,7 @@ public class UserControllerTest {
         String jsonRequest = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(post("/api/user/register")
-                        .header("Accept-Language", "en") // Set the Accept-Language header
+                        .header("Accept-Language", "en")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isOk())
@@ -119,17 +120,16 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserAlreadyExists() throws Exception {
-        when(userService.registerUser(any(User.class), any(Locale.class))).thenReturn("Username already exists.");
+    public void testRegisterUserFailure() throws Exception {
+        when(userService.registerUser(any(User.class), any(Locale.class))).thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 
         String jsonRequest = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(post("/api/user/register")
-                        .header("Accept-Language", "en") // Set the Accept-Language header
+                        .header("Accept-Language", "en")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string("Username already exists."));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

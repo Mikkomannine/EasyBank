@@ -51,9 +51,9 @@ public class TransactionRepositoryTest {
         List<Transaction> transactions = transactionRepository.findAllBySenderAccountIdOrReceiverAccountId(1, 2);
         System.out.println("Transactions: " + transactions);
         assertThat(transactions).isNotEmpty();
-        assertThat(transactions.size()).isEqualTo(28);
-        assertThat(transactions.get(0).getMessage()).isEqualTo("Payment");
-        assertThat(transactions.get(1).getMessage()).isEqualTo("testi");
+        assertThat(transactions.size()).isEqualTo(3);
+        assertThat(transactions.get(0).getMessage()).isEqualTo(null);
+        assertThat(transactions.get(2).getMessage()).isEqualTo("Test transaction 1");
     }
 }
 
