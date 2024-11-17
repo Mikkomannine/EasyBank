@@ -11,6 +11,16 @@
     align-items: center;
     margin-bottom: 30px;
 }
+@media (max-width: 768px) {
+    .layout-row {
+        flex-direction: column;
+        align-items: center;
+    }
+    .layout-row h2 {
+        font-size: 20px;
+    }
+}
+
 .register-body {
     display: flex;
     flex-direction: column;

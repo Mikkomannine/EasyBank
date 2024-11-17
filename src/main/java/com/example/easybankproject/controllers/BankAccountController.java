@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.vaadin.flow.server.VaadinSession;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 import static org.springframework.context.i18n.LocaleContextHolder.getLocale;

@@ -148,6 +148,16 @@
     width: 900px;
 }
 
+@media (max-width: 768px) {
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        max-width: 768px;
+    }
+}
+
 .transaction-btn {
     background-color: hsl(99, 86%, 64%);
     color: white;
