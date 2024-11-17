@@ -349,10 +349,8 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             getContent().add(new Div(messageSource.getMessage("unauthorized.no.token", null, getLocale())));
             return;
         }
-
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
-
         HttpEntity<String> request = new HttpEntity<>(headers);
 
         try {

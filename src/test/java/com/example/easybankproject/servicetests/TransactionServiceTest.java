@@ -5,11 +5,17 @@ import com.example.easybankproject.db.TransactionRepository;
 import com.example.easybankproject.db.UserRepository;
 import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.Transaction;
+import com.example.easybankproject.models.User;
 import com.example.easybankproject.services.NotificationService;
+import com.example.easybankproject.services.TransactionService;
 import com.example.easybankproject.utils.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,70 +23,130 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@Service
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 public class TransactionServiceTest {
 
-    @Autowired
+    @Mock
     private BankAccountRepository bankAccountRepository;
 
-    @Autowired
+    @Mock
     private TransactionRepository transactionRepository;
 
-    @Autowired
+    @Mock
     private NotificationService notificationService;
 
-    @Autowired
+    @Mock
     private UserRepository userRepository;
 
-    @Autowired
+    @Mock
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private MessageSource messageSource;  // Inject MessageSource for localization
+    @Mock
+    private MessageSource messageSource;
 
-    public String createTransaction(Transaction transaction, Locale locale) {
-        // Attempt to retrieve sender and receiver accounts, or throw a localized error
-        BankAccount senderAccount = bankAccountRepository.findByBankAccountId(transaction.getSenderAccountId())
-                .orElseThrow(() -> new RuntimeException(messageSource.getMessage("error.account.not.found", null, "Sender or receiver account not found.", locale)));
-        BankAccount receiverAccount = bankAccountRepository.findByBankAccountId(transaction.getReceiverAccountId())
-                .orElseThrow(() -> new RuntimeException(messageSource.getMessage("error.account.not.found", null, "Sender or receiver account not found.", locale)));
+    @InjectMocks
+    private TransactionService transactionService;
 
-        // Check for sufficient funds in sender's account
-        if (senderAccount.getBalance().compareTo(BigDecimal.valueOf(transaction.getAmount())) < 0) {
-            return messageSource.getMessage("error.insufficient.funds", null, "Insufficient funds.", locale);
-        }
+    private Transaction transaction;
+    private BankAccount senderAccount;
+    private BankAccount receiverAccount;
+    private Locale locale;
 
-        // Deduct and add funds
-        senderAccount.setBalance(senderAccount.getBalance().subtract(BigDecimal.valueOf(transaction.getAmount())));
-        receiverAccount.setBalance(receiverAccount.getBalance().add(BigDecimal.valueOf(transaction.getAmount())));
-        bankAccountRepository.save(senderAccount);
-        bankAccountRepository.save(receiverAccount);
-
-        // Record the transaction
+    @BeforeEach
+    public void setUp() {
+        transaction = new Transaction();
+        transaction.setSenderAccountId(1);
+        transaction.setReceiverAccountId(2);
+        transaction.setAmount(100.0);
         transaction.setTimestamp(LocalDateTime.now());
-        transactionRepository.save(transaction);
 
-        // Send localized notifications
-        String toNotification = messageSource.getMessage("transaction.notification.to", new Object[]{transaction.getAmount(), transaction.getReceiverAccountId()}, locale);
-        String fromNotification = messageSource.getMessage("transaction.notification.from", new Object[]{transaction.getAmount(), transaction.getSenderAccountId()}, locale);
-        notificationService.createNotification(senderAccount.getUser(), transaction, toNotification);
-        notificationService.createNotification(receiverAccount.getUser(), transaction, fromNotification);
+        senderAccount = new BankAccount();
+        senderAccount.setBankAccountId(1);
+        senderAccount.setBalance(BigDecimal.valueOf(200.0));
 
-        // Return success message with localized transaction ID message
-        return messageSource.getMessage("created.transaction", new Object[]{transaction.getTransactionId()}, "Transaction created successfully. ID: ", locale);
+        receiverAccount = new BankAccount();
+        receiverAccount.setBankAccountId(2);
+        receiverAccount.setBalance(BigDecimal.valueOf(100.0));
+
+        locale = Locale.ENGLISH;
     }
 
-    public int getSenderId(String token) {
-        String username = jwtUtil.extractUsername(token);
-        return bankAccountRepository.findByUser(userRepository.findByUsername(username))
-                .orElseThrow(() -> new RuntimeException("User not found"))
-                .getBankAccountId();
+    @Test
+    public void testCreateTransaction_Success() {
+        when(bankAccountRepository.findByBankAccountId(1)).thenReturn(Optional.of(senderAccount));
+        when(bankAccountRepository.findByBankAccountId(2)).thenReturn(Optional.of(receiverAccount));
+        when(messageSource.getMessage("created.transaction", null, locale)).thenReturn("Transaction created successfully. ID: ");
+        when(messageSource.getMessage("to.notification", null, locale)).thenReturn("to");
+        when(messageSource.getMessage("from.notification", null, locale)).thenReturn("from");
+
+        String result = transactionService.createTransaction(transaction, locale);
+
+        assertTrue(result.contains("Transaction created successfully. ID: "));
+        verify(bankAccountRepository).save(senderAccount);
+        verify(bankAccountRepository).save(receiverAccount);
+        verify(transactionRepository).save(transaction);
+        verify(notificationService, times(2)).createNotification(any(), any(), anyString());
     }
 
-    public List<Transaction> getTransactions(String token) {
-        String username = jwtUtil.extractUsername(token);
-        BankAccount bankAccount = bankAccountRepository.findByUser(userRepository.findByUsername(username))
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return transactionRepository.findAllBySenderAccountIdOrReceiverAccountId(bankAccount.getBankAccountId(), bankAccount.getBankAccountId());
+    @Test
+    public void testCreateTransaction_InsufficientFunds() {
+        senderAccount.setBalance(BigDecimal.valueOf(50.0));
+        when(bankAccountRepository.findByBankAccountId(1)).thenReturn(Optional.of(senderAccount));
+        when(bankAccountRepository.findByBankAccountId(2)).thenReturn(Optional.of(receiverAccount));
+        when(messageSource.getMessage("insufficient.funds", null, locale)).thenReturn("Insufficient funds.");
+
+        String result = transactionService.createTransaction(transaction, locale);
+
+        assertEquals("Insufficient funds.", result);
+        verify(bankAccountRepository, never()).save(any(BankAccount.class));
+        verify(transactionRepository, never()).save(any(Transaction.class));
+        verify(notificationService, never()).createNotification(any(), any(), anyString());
+    }
+
+    @Test
+    public void testCreateTransaction_AccountNotFound() {
+        when(bankAccountRepository.findByBankAccountId(1)).thenReturn(Optional.empty());
+        when(messageSource.getMessage("sender.receiver.notfound", null, locale)).thenReturn("Sender or receiver account not found.");
+
+        String result = transactionService.createTransaction(transaction, locale);
+
+        assertEquals("Sender or receiver account not found.", result);
+        verify(bankAccountRepository, never()).save(any(BankAccount.class));
+        verify(transactionRepository, never()).save(any(Transaction.class));
+        verify(notificationService, never()).createNotification(any(), any(), anyString());
+    }
+
+    @Test
+    public void testGetSenderId_Success() {
+        when(jwtUtil.extractUsername(anyString())).thenReturn("testuser");
+        when(userRepository.findByUsername("testuser")).thenReturn(new User());
+        when(bankAccountRepository.findByUser(any(User.class))).thenReturn(Optional.of(senderAccount));
+
+        int senderId = transactionService.getSenderId("token");
+
+        assertEquals(1, senderId);
+    }
+
+    @Test
+    public void testGetTransactions_Success() {
+        when(jwtUtil.extractUsername(anyString())).thenReturn("testuser");
+        when(userRepository.findByUsername("testuser")).thenReturn(new User());
+        when(bankAccountRepository.findByUser(any(User.class))).thenReturn(Optional.of(senderAccount));
+        when(transactionRepository.findAllBySenderAccountIdOrReceiverAccountId(1, 1)).thenReturn(List.of(transaction));
+
+        List<Transaction> transactions = transactionService.getTransactions("token");
+
+        assertNotNull(transactions);
+        assertEquals(1, transactions.size());
+    }
+
+    @Test
+    public void testGetTransactions_TokenNull() {
+        List<Transaction> transactions = transactionService.getTransactions(null);
+
+        assertNull(transactions);
     }
 }
