@@ -175,5 +175,6 @@ class BankAccountControllerTest {
                         .content("{\"balance\":1000}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$").value("Error creating account"));
+
     }
 }
