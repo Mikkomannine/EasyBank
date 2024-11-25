@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TransactionController.class)
-public class TransactionControllerTest {
+class TransactionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,7 +55,7 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})
-    public void testCreateTransaction_Success() throws Exception {
+    void testCreateTransaction_Success() throws Exception {
 
         // Mock the messageSource to return the expected locale-specific message
         when(messageSource.getMessage("created.transaction", null, Locale.ENGLISH))
@@ -75,7 +75,7 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})
-    public void testCreateTransaction_Failure() throws Exception {
+    void testCreateTransaction_Failure() throws Exception {
 
         // Mock the messageSource to return the expected locale-specific message for a failed transaction
         when(messageSource.getMessage("created.transaction", null, Locale.ENGLISH))
@@ -96,7 +96,7 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})
-    public void testGetTransactions_Success() throws Exception {
+    void testGetTransactions_Success() throws Exception {
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(transaction);
         when(transactionService.getTransactions(any(String.class)))
@@ -110,7 +110,7 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})
-    public void testGetTransactions_Unauthorized() throws Exception {
+    void testGetTransactions_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/transaction/history"))
                 .andExpect(status().isBadRequest());
     }

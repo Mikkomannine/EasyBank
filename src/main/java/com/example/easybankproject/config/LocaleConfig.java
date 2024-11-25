@@ -14,12 +14,12 @@ import java.util.Locale;
 @Configuration
 public class LocaleConfig implements WebMvcConfigurer {
 
-    @Bean
-    public LocaleResolver localeResolver() {
-        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
-        cookieLocaleResolver.setDefaultLocale(new Locale("en"));
-        return cookieLocaleResolver;
-    }
+@Bean
+public LocaleResolver localeResolver() {
+    CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
+    cookieLocaleResolver.setDefaultLocale(Locale.ENGLISH);
+    return cookieLocaleResolver;
+}
 
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {

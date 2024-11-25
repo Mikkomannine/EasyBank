@@ -2,6 +2,7 @@ package com.example.easybankproject.services;
 
 import com.example.easybankproject.db.BankAccountRepository;
 import com.example.easybankproject.db.UserRepository;
+import com.example.easybankproject.exceptions.UnauthorizedException;
 import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.User;
 import com.example.easybankproject.utils.JwtUtil;
@@ -13,14 +14,18 @@ import java.math.BigDecimal;
 @Service
 public class BankAccountService {
 
-    @Autowired
     private BankAccountRepository bankAccountRepository;
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    public BankAccountService(BankAccountRepository bankAccountRepository, UserRepository userRepository, JwtUtil jwtUtil) {
+        this.bankAccountRepository = bankAccountRepository;
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+    }
 
     public BankAccount getBalance(String token) {
         String username = jwtUtil.extractUsername(token);
@@ -31,7 +36,7 @@ public class BankAccountService {
     public String createBankAccount(BankAccount bankAccount, String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new RuntimeException("Unauthorized: User not found.");
+            throw new UnauthorizedException("Unauthorized: User not found.");
         }
 
         bankAccount.setUser(user);

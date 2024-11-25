@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
     @Entity
     @Setter
@@ -24,7 +23,5 @@ import java.sql.Timestamp;
         private User user;
 
         private BigDecimal balance;
-
-        public static final BigDecimal GBP_RATE = BigDecimal.valueOf(0.83);
 
     }

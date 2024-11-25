@@ -4,7 +4,6 @@ import com.example.easybankproject.db.TransactionRepository;
 import com.example.easybankproject.models.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -18,42 +17,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class TransactionRepositoryTest {
+class TransactionRepositoryTest {
 
     @Autowired
     private TransactionRepository transactionRepository;
 
     private Transaction transaction1;
 
-    private Transaction transaction2;
-
 
 
     @BeforeEach
     public void setup() {
         transaction1 = new Transaction();
-        transaction1.setSenderAccountId(1);
-        transaction1.setReceiverAccountId(2);
+        transaction1.setSenderAccountId(100);
+        transaction1.setReceiverAccountId(200);
         transaction1.setAmount(1);
         transaction1.setMessage("Test transaction 1");
         transactionRepository.save(transaction1);
 
-        transaction2 = new Transaction();
-        transaction2.setSenderAccountId(2);
-        transaction2.setReceiverAccountId(1);
-        transaction2.setAmount(1);
-        transaction2.setMessage("Test transaction 2");
-        transactionRepository.save(transaction2);
     }
 
     @Test
-    public void testFindAllBySenderAccountIdOrReceiverAccountId() {
-        List<Transaction> transactions = transactionRepository.findAllBySenderAccountIdOrReceiverAccountId(1, 2);
+    void testFindAllBySenderAccountIdOrReceiverAccountId() {
+        List<Transaction> transactions = transactionRepository.findAllBySenderAccountIdOrReceiverAccountId(100, 200);
         System.out.println("Transactions: " + transactions);
-        assertThat(transactions).isNotEmpty();
-        assertThat(transactions.size()).isEqualTo(3);
-        assertThat(transactions.get(0).getMessage()).isEqualTo(null);
-        assertThat(transactions.get(2).getMessage()).isEqualTo("Test transaction 1");
+
+        assertThat(transactions)
+                .isNotEmpty()
+                .hasSize(1)
+                .element(0)
+                .extracting(Transaction::getMessage)
+                .isEqualTo("Test transaction 1");
     }
 }
 

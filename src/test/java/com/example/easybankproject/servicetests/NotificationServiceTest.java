@@ -15,12 +15,11 @@ import org.mockito.MockitoAnnotations;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class NotificationServiceTest {
+class NotificationServiceTest {
 
     @Mock
     private NotificationRepository notificationRepository;
@@ -53,7 +52,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testGetUserNotifications() {
+    void testGetUserNotifications() {
         // Arrange
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         List<Notification> notifications = new ArrayList<>();
@@ -69,7 +68,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testGetNotificationsCount() {
+    void testGetNotificationsCount() {
         // Arrange
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         List<Notification> notifications = new ArrayList<>();
@@ -84,7 +83,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testCreateNotification() {
+    void testCreateNotification() {
         // Act
         notificationService.createNotification(user, transaction, "Test notification");
 
@@ -93,7 +92,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testDeleteNotificationSuccess() {
+    void testDeleteNotificationSuccess() {
         // Arrange
         when(notificationRepository.existsById(1)).thenReturn(true);
 
@@ -106,7 +105,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testDeleteNotificationFailure() {
+    void testDeleteNotificationFailure() {
         // Arrange
         when(notificationRepository.existsById(1)).thenReturn(false);
 

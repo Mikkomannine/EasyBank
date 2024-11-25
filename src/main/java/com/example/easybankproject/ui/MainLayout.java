@@ -12,22 +12,19 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 @CssImport("./styles/mainlayout.css")
 @PreserveOnRefresh
 public class MainLayout extends AppLayout {
 
-    private final MessageSource messageSource;
+    private transient MessageSource messageSource;
     private Button logoutButton;
     private RouterLink profileLink;
     private RouterLink homeLink;
@@ -97,39 +94,33 @@ public class MainLayout extends AppLayout {
 
     private VerticalLayout createLanguageFlags() {
         Image englishFlag = new Image("images/united-kingdom.png", getMessage("English"));
-        englishFlag.addClickListener(event -> changeLanguage(new Locale("en")));
+        englishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("en")));
 
         Image finnishFlag = new Image("images/finland.png", getMessage("Finland"));
-        finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
+        finnishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("fi")));
 
         Image arabicFlag = new Image("images/arabic.png", getMessage("Arabic"));
-        arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
+        arabicFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ar")));
 
         Image koreanFlag = new Image("images/south-korea.png", getMessage("Korean"));
-        koreanFlag.addClickListener(event -> changeLanguage(new Locale("ko")));
+        koreanFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ko")));
 
         Image spanishFlag = new Image("images/spanish.png", getMessage("Spanish"));
-        spanishFlag.addClickListener(event -> changeLanguage(new Locale("es")));
+        spanishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("es")));
 
         Image japaneseFlag = new Image("images/japan.png", getMessage("Japanese"));
-        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
+        japaneseFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ja")));
 
-        englishFlag.setHeight("30px");
-        englishFlag.setWidth("30px");
-        finnishFlag.setHeight("30px");
-        finnishFlag.setWidth("30px");
-        arabicFlag.setHeight("30px");
-        arabicFlag.setWidth("30px");
-        koreanFlag.setHeight("30px");
-        koreanFlag.setWidth("30px");
-        spanishFlag.setHeight("30px");
-        spanishFlag.setWidth("30px");
-        japaneseFlag.setHeight("30px");
-        japaneseFlag.setWidth("30px");
+        // Set dimensions for all flags in a loop
+        List<Image> flags = Arrays.asList(englishFlag, finnishFlag, arabicFlag, koreanFlag, spanishFlag, japaneseFlag);
+        for (Image flag : flags) {
+            flag.setHeight("30px");
+            flag.setWidth("30px");
+        }
 
-        HorizontalLayout languageLayout = new HorizontalLayout(englishFlag, finnishFlag, arabicFlag);
+        HorizontalLayout languageLayout1 = new HorizontalLayout(englishFlag, finnishFlag, arabicFlag);
         HorizontalLayout languageLayout2 = new HorizontalLayout(koreanFlag, spanishFlag, japaneseFlag);
-        return new VerticalLayout(languageLayout, languageLayout2);
+        return new VerticalLayout(languageLayout1, languageLayout2);
     }
 
     private void changeLanguage(Locale locale) {
@@ -146,12 +137,6 @@ public class MainLayout extends AppLayout {
 
     private String getMessage(String code) {
         Locale currentLocale = VaadinSession.getCurrent().getLocale();
-        System.out.println("Current Locale: " + currentLocale); // Debugging
         return messageSource.getMessage(code, null, currentLocale);
-    }
-
-    @Override
-    protected void afterNavigation() {
-        super.afterNavigation();
     }
 }

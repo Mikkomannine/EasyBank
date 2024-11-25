@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 
-public class BankAccountServiceTest {
+class BankAccountServiceTest {
 
     @Mock
     private BankAccountRepository bankAccountRepository;
@@ -38,7 +38,7 @@ public class BankAccountServiceTest {
     private BankAccount bankAccount;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
 
         user = new User();
@@ -50,7 +50,7 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    public void testGetBalanceSuccess() {
+    void testGetBalanceSuccess() {
         // Arrange
         String token = "validToken";
         when(jwtUtil.extractUsername(token)).thenReturn("testuser");
@@ -65,7 +65,7 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    public void testGetBalanceUserNotFound() {
+    void testGetBalanceUserNotFound() {
         // Arrange
         String token = "validToken";
         when(jwtUtil.extractUsername(token)).thenReturn("testuser");
@@ -76,7 +76,7 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    public void testCreateBankAccountWithBankAccountSuccess() {
+    void testCreateBankAccountWithBankAccountSuccess() {
         // Arrange
         when(userRepository.findByUsername("testuser")).thenReturn(user);
 
@@ -88,7 +88,7 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    public void testCreateBankAccountWithBankAccountUserNotFound() {
+    void testCreateBankAccountWithBankAccountUserNotFound() {
         // Arrange
         when(userRepository.findByUsername("testuser")).thenReturn(null);
 
@@ -97,7 +97,7 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    public void testCreateBankAccountWithUserSuccess() {
+    void testCreateBankAccountWithUserSuccess() {
         // Act
         bankAccountService.createBankAccount(user);
 

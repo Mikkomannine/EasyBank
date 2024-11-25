@@ -17,16 +17,18 @@ import java.util.Locale;
 @RequestMapping("/api/transaction")
 public class TransactionController {
 
-    @Autowired
     private TransactionService transactionService;
 
-    @Autowired
-    private MessageSource messageSource;  // Inject MessageSource for localization
+    private MessageSource messageSource;
 
+    @Autowired
+    public TransactionController(TransactionService transactionService, MessageSource messageSource) {
+        this.transactionService = transactionService;
+        this.messageSource = messageSource;
+    }
 
     @PostMapping("/create")
     public ResponseEntity<String> createTransaction(@RequestBody Transaction transaction, @RequestHeader("Accept-Language") Locale locale) {
-        System.out.println("LOCALE IN CONTROLLER " + locale);
         String result = transactionService.createTransaction(transaction, locale);
         if (result.startsWith(messageSource.getMessage("created.transaction", null, locale))) {
             return ResponseEntity.ok(result);

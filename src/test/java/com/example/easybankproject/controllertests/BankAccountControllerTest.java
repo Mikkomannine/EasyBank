@@ -94,7 +94,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class BankAccountControllerTest {
+class BankAccountControllerTest {
 
     private MockMvc mockMvc;
 
@@ -110,7 +110,7 @@ public class BankAccountControllerTest {
     private BankAccount bankAccount;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
         this.mockMvc = MockMvcBuilders.standaloneSetup(bankAccountController).build();
 
@@ -122,7 +122,7 @@ public class BankAccountControllerTest {
     }
 
     @Test
-    public void testGetBalanceSuccess() throws Exception {
+    void testGetBalanceSuccess() throws Exception {
         String token = "Bearer validToken";
         when(bankAccountService.getBalance("validToken")).thenReturn(bankAccount);
 
@@ -133,7 +133,7 @@ public class BankAccountControllerTest {
     }
 
     @Test
-    public void testGetBalanceUnauthorized() throws Exception {
+    void testGetBalanceUnauthorized() throws Exception {
         String token = "Bearer invalidToken";
         when(bankAccountService.getBalance("invalidToken")).thenThrow(new RuntimeException());
 
@@ -143,7 +143,7 @@ public class BankAccountControllerTest {
     }
 
     @Test
-    public void testCreateBankAccountSuccess() throws Exception {
+    void testCreateBankAccountSuccess() throws Exception {
         when(vaadinSession.getAttribute("username")).thenReturn("testuser");
         when(bankAccountService.createBankAccount(any(BankAccount.class), eq("testuser"))).thenReturn("Bank account created");
 
@@ -155,7 +155,7 @@ public class BankAccountControllerTest {
     }
 
     @Test
-    public void testCreateBankAccountUnauthorizedNoUser() throws Exception {
+    void testCreateBankAccountUnauthorizedNoUser() throws Exception {
         when(vaadinSession.getAttribute("username")).thenReturn(null);
 
         mockMvc.perform(post("/api/bankaccount/create")
@@ -166,7 +166,7 @@ public class BankAccountControllerTest {
     }
 
     @Test
-    public void testCreateBankAccountUnauthorizedException() throws Exception {
+    void testCreateBankAccountUnauthorizedException() throws Exception {
         when(vaadinSession.getAttribute("username")).thenReturn("testuser");
         when(bankAccountService.createBankAccount(any(BankAccount.class), eq("testuser"))).thenThrow(new RuntimeException("Error creating account"));
 

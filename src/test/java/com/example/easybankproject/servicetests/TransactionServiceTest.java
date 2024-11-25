@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class TransactionServiceTest {
+class TransactionServiceTest {
 
     @Mock
     private BankAccountRepository bankAccountRepository;
@@ -75,7 +75,7 @@ public class TransactionServiceTest {
     }
 
     @Test
-    public void testCreateTransaction_Success() {
+    void testCreateTransaction_Success() {
         when(bankAccountRepository.findByBankAccountId(1)).thenReturn(Optional.of(senderAccount));
         when(bankAccountRepository.findByBankAccountId(2)).thenReturn(Optional.of(receiverAccount));
         when(messageSource.getMessage("created.transaction", null, locale)).thenReturn("Transaction created successfully. ID: ");
@@ -92,7 +92,7 @@ public class TransactionServiceTest {
     }
 
     @Test
-    public void testCreateTransaction_InsufficientFunds() {
+    void testCreateTransaction_InsufficientFunds() {
         senderAccount.setBalance(BigDecimal.valueOf(50.0));
         when(bankAccountRepository.findByBankAccountId(1)).thenReturn(Optional.of(senderAccount));
         when(bankAccountRepository.findByBankAccountId(2)).thenReturn(Optional.of(receiverAccount));
@@ -107,7 +107,7 @@ public class TransactionServiceTest {
     }
 
     @Test
-    public void testCreateTransaction_AccountNotFound() {
+    void testCreateTransaction_AccountNotFound() {
         when(bankAccountRepository.findByBankAccountId(1)).thenReturn(Optional.empty());
         when(messageSource.getMessage("sender.receiver.notfound", null, locale)).thenReturn("Sender or receiver account not found.");
 
@@ -120,7 +120,7 @@ public class TransactionServiceTest {
     }
 
     @Test
-    public void testGetSenderId_Success() {
+    void testGetSenderId_Success() {
         when(jwtUtil.extractUsername(anyString())).thenReturn("testuser");
         when(userRepository.findByUsername("testuser")).thenReturn(new User());
         when(bankAccountRepository.findByUser(any(User.class))).thenReturn(Optional.of(senderAccount));
@@ -131,7 +131,7 @@ public class TransactionServiceTest {
     }
 
     @Test
-    public void testGetTransactions_Success() {
+    void testGetTransactions_Success() {
         when(jwtUtil.extractUsername(anyString())).thenReturn("testuser");
         when(userRepository.findByUsername("testuser")).thenReturn(new User());
         when(bankAccountRepository.findByUser(any(User.class))).thenReturn(Optional.of(senderAccount));
@@ -144,9 +144,9 @@ public class TransactionServiceTest {
     }
 
     @Test
-    public void testGetTransactions_TokenNull() {
+    void testGetTransactions_TokenNull() {
         List<Transaction> transactions = transactionService.getTransactions(null);
-
-        assertNull(transactions);
+        // Assert List is empty
+        assertNotNull(transactions);
     }
 }

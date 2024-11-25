@@ -20,23 +20,27 @@ import java.util.Optional;
 @Service
 public class TransactionService {
 
-    @Autowired
     private BankAccountRepository bankAccountRepository;
 
-    @Autowired
     private TransactionRepository transactionRepository;
 
-    @Autowired
     private NotificationService notificationService;
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private JwtUtil jwtUtil;
 
+    private MessageSource messageSource;
+
     @Autowired
-    private MessageSource messageSource;  // Inject MessageSource for localization
+    public TransactionService(BankAccountRepository bankAccountRepository, TransactionRepository transactionRepository, NotificationService notificationService, UserRepository userRepository, JwtUtil jwtUtil, MessageSource messageSource) {
+        this.bankAccountRepository = bankAccountRepository;
+        this.transactionRepository = transactionRepository;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+        this.messageSource = messageSource;
+    }
 
 
     public String createTransaction(Transaction transaction, Locale locale) {
@@ -61,8 +65,6 @@ public class TransactionService {
         notificationService.createNotification(senderAccount.get().getUser(), transaction, transaction.getAmount() + " € " + messageSource.getMessage("to.notification", null, locale) + transaction.getReceiverAccountId());
         notificationService.createNotification(receiverAccount.get().getUser(), transaction, transaction.getAmount() + " € " + messageSource.getMessage("from.notification", null, locale) + transaction.getSenderAccountId());
 
-        System.out.println("NOTIFICATION LOCALE PASSED IN AS PARAMETER FROM UI:" + locale);
-
         return messageSource.getMessage("created.transaction", null, locale) + transaction.getTransactionId();
     }
     public int getSenderId(String token) {
@@ -73,7 +75,7 @@ public class TransactionService {
 
     public List<Transaction> getTransactions(String token) {
         if (token == null) {
-            return null;
+            return List.of();
         }
         String username = jwtUtil.extractUsername(token);
         BankAccount bankAccount = bankAccountRepository.findByUser(userRepository.findByUsername(username)).orElseThrow(() -> new RuntimeException("User not found"));

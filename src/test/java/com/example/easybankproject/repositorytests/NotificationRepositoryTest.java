@@ -3,7 +3,6 @@ package com.example.easybankproject.repositorytests;
 
 import com.example.easybankproject.db.NotificationRepository;
 import com.example.easybankproject.db.UserRepository;
-import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.models.Notification;
 import com.example.easybankproject.models.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class NotificationRepositoryTest {
+class NotificationRepositoryTest {
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -54,7 +53,7 @@ public class NotificationRepositoryTest {
     }
 
     @Test
-    public void testFindByUser() {
+    void testFindByUser() {
         List<Notification> notifications = notificationRepository.findByUser(user);
         assertThat(notifications).isNotEmpty();
         assertThat(notifications.get(0).getContent()).isEqualTo("Test notification");

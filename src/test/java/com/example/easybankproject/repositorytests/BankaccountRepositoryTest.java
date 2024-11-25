@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class BankaccountRepositoryTest {
+class BankaccountRepositoryTest {
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
@@ -51,14 +51,14 @@ public class BankaccountRepositoryTest {
     }
 
     @Test
-    public void testFindByUser() {
+    void testFindByUser() {
         Optional<BankAccount> foundAccount = bankAccountRepository.findByUser(user);
         assertThat(foundAccount).isPresent();
         assertThat(foundAccount.get().getUser().getUsername()).isEqualTo("test1user");
     }
 
     @Test
-    public void testFindByBankAccountId() {
+    void testFindByBankAccountId() {
         Optional<BankAccount> foundAccount = bankAccountRepository.findByBankAccountId(bankAccount.getBankAccountId());
         assertThat(foundAccount).isPresent();
         assertThat(foundAccount.get().getBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000));

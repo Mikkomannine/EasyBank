@@ -4,24 +4,22 @@ package com.example.easybankproject.controllers;
 import com.example.easybankproject.models.BankAccount;
 import com.example.easybankproject.services.BankAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.vaadin.flow.server.VaadinSession;
 
-import java.math.BigDecimal;
-import java.util.Locale;
-
-import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 @RestController
 @RequestMapping("/api/bankaccount")
 public class BankAccountController {
 
-    @Autowired
     private BankAccountService bankAccountService;
 
+    @Autowired
+    public BankAccountController(BankAccountService bankAccountService) {
+        this.bankAccountService = bankAccountService;
+    }
 
 
     @GetMapping("/balance")

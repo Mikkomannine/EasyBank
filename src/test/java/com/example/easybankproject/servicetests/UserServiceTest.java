@@ -1,6 +1,7 @@
 package com.example.easybankproject.servicetests;
 
 import com.example.easybankproject.db.UserRepository;
+import com.example.easybankproject.exceptions.UsernameExists;
 import com.example.easybankproject.models.User;
 import com.example.easybankproject.services.BankAccountService;
 import com.example.easybankproject.services.NotificationService;
@@ -58,7 +59,6 @@ class UserServiceTest {
         user.setPhonenumber(123456789);
         user.setFirstname("Test");
         user.setLastname("User");
-
         locale = Locale.ENGLISH;
     }
 
@@ -130,17 +130,16 @@ class UserServiceTest {
 
     @Test
     void testRegisterUser_UsernameExists() {
-        when(userRepository.findByUsername("testUser")).thenReturn(user);
+        lenient().when(userRepository.findByUsername("testUser")).thenReturn(user);
+        lenient().when(messageSource.getMessage("error.username.exists", null, "Username already exists.", locale))
+                .thenReturn("Username already exists.");
 
-        Exception exception = assertThrows(Exception.class, () -> {
-            userService.registerUser(user, locale);
-        });
+        assertThrows(UsernameExists.class, () -> userService.registerUser(user, locale));
 
         verify(userRepository, never()).save(any(User.class));
         verify(bankAccountService, never()).createBankAccount(any(User.class));
         verify(notificationService, never()).createNotification(any(User.class), any(), anyString());
     }
-
 
     @Test
     void testLoginUser_Success() {
