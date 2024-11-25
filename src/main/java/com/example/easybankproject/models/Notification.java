@@ -26,4 +26,5 @@ public class Notification {
 
     private String content;
     private LocalDateTime timestamp;
+
 }
