@@ -15,11 +15,15 @@ import java.util.List;
 @Service
 public class NotificationService {
 
-    @Autowired
     private NotificationRepository notificationRepository;
 
-    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    public NotificationService(NotificationRepository notificationRepository, UserRepository userRepository) {
+        this.notificationRepository = notificationRepository;
+        this.userRepository = userRepository;
+    }
 
     public List<Notification> getUserNotifications(String username) {
         User user = userRepository.findByUsername(username);

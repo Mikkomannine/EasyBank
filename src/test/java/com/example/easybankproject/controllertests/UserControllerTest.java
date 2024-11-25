@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class UserControllerTest {
+class UserControllerTest {
 
     private MockMvc mockMvc;
 
@@ -46,7 +46,7 @@ public class UserControllerTest {
         this.mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
 
         user = new User();
-        user.setUser_id(1);
+        user.setUserId(1);
         user.setUsername("test1user");
         user.setEmail("test@example.com");
         user.setAddress("123 Test St");
@@ -56,7 +56,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testGetUserDataSuccess() throws Exception {
+    void testGetUserDataSuccess() throws Exception {
 
         String token = "Bearer validToken";
         when(userService.getUserData("validToken")).thenReturn(user);
@@ -72,7 +72,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUserDataSuccess() throws Exception {
+    void testUpdateUserDataSuccess() throws Exception {
 
         String token = "Bearer validToken";
         when(userService.updateUserData(anyString(), any(User.class))).thenReturn(user);
@@ -92,7 +92,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUserDataUserNotFound() throws Exception {
+    void testUpdateUserDataUserNotFound() throws Exception {
         String token = "Bearer validToken";
         when(userService.updateUserData("validToken", user)).thenReturn(null);
 
@@ -106,7 +106,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserSuccess() throws Exception {
+    void testRegisterUserSuccess() throws Exception {
         when(userService.registerUser(any(User.class), any(Locale.class))).thenReturn("User registered successfully");
 
         String jsonRequest = objectMapper.writeValueAsString(user);
@@ -120,7 +120,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserFailure() throws Exception {
+    void testRegisterUserFailure() throws Exception {
         when(userService.registerUser(any(User.class), any(Locale.class))).thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 
         String jsonRequest = objectMapper.writeValueAsString(user);
@@ -133,7 +133,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testLoginUserSuccess() throws Exception {
+    void testLoginUserSuccess() throws Exception {
         user.setUsername("testuser");
         user.setPassword("password123");
         when(userService.loginUser(any(User.class), any(Locale.class))).thenReturn("ValidToken123");
@@ -150,7 +150,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testLoginUserInvalidPassword() throws Exception {
+    void testLoginUserInvalidPassword() throws Exception {
         when(userService.loginUser(any(User.class), any(Locale.class))).thenReturn("Invalid username or password.");
 
         String jsonRequest = objectMapper.writeValueAsString(user);

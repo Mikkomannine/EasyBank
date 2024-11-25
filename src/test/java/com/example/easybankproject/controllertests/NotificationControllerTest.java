@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -23,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class NotificationControllerTest {
+class NotificationControllerTest {
 
     private MockMvc mockMvc;
 
@@ -57,7 +56,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void testGetUserNotifications() throws Exception {
+    void testGetUserNotifications() throws Exception {
         String token = "Bearer validToken";
         when(jwtUtil.extractUsername("validToken")).thenReturn("testuser");
         when(notificationService.getUserNotifications("testuser")).thenReturn(notifications);
@@ -70,7 +69,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void testGetNotificationsCount() throws Exception {
+    void testGetNotificationsCount() throws Exception {
         String token = "Bearer validToken";
         when(jwtUtil.extractUsername("validToken")).thenReturn("testuser");
         when(notificationService.getNotificationsCount("testuser")).thenReturn(notifications.size());
@@ -82,7 +81,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void testDeleteNotificationSuccess() throws Exception {
+    void testDeleteNotificationSuccess() throws Exception {
         int notificationId = 1;
         when(notificationService.deleteNotification(notificationId)).thenReturn(true);
 
@@ -91,7 +90,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void testDeleteNotificationNotFound() throws Exception {
+    void testDeleteNotificationNotFound() throws Exception {
         int notificationId = 1;
         when(notificationService.deleteNotification(notificationId)).thenReturn(false);
 

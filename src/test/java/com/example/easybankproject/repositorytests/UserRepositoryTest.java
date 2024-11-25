@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class UserRepositoryTest {
+class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
@@ -37,7 +37,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testFindByUsername() {
+    void testFindByUsername() {
         User foundUser = userRepository.findByUsername("test1user");
         assertThat(foundUser).isNotNull();
         assertThat(foundUser.getUsername()).isEqualTo("test1user");

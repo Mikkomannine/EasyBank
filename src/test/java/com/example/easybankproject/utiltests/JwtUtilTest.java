@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JwtUtilTest {
+class JwtUtilTest {
 
     private JwtUtil jwtUtil;
     private String token;
@@ -20,18 +20,18 @@ public class JwtUtilTest {
     }
 
     @Test
-    public void testGenerateToken() {
+    void testGenerateToken() {
         assertNotNull(token);
         assertTrue(token.length() > 0);
     }
 
     @Test
-    public void testValidateToken_Success() throws Exception {
+    void testValidateToken_Success() throws Exception {
         assertTrue(jwtUtil.validateToken(token, username));
     }
 
     @Test
-    public void testValidateToken_TokenNull() {
+    void testValidateToken_TokenNull() {
         Exception exception = assertThrows(Exception.class, () -> {
             jwtUtil.validateToken(null, username);
         });
@@ -39,23 +39,23 @@ public class JwtUtilTest {
     }
 
     @Test
-    public void testValidateToken_InvalidUsername() throws Exception {
+    void testValidateToken_InvalidUsername() throws Exception {
         assertFalse(jwtUtil.validateToken(token, "invaliduser"));
     }
 
     @Test
-    public void testExtractUsername() {
+    void testExtractUsername() {
         String extractedUsername = jwtUtil.extractUsername(token);
         assertEquals(username, extractedUsername);
     }
 
     @Test
-    public void testIsTokenExpired() {
+    void testIsTokenExpired() {
         assertFalse(jwtUtil.isTokenExpired(token));
     }
 
     @Test
-    public void testExtractAllClaims() {
+    void testExtractAllClaims() {
         Claims claims = jwtUtil.extractAllClaims(token);
         assertNotNull(claims);
         assertEquals(username, claims.getSubject());

@@ -37,21 +37,27 @@ import java.util.Locale;
 @PageTitle("Main")
 @Route(value = "main", layout = MainLayout.class)
 public class MainView extends Composite<VerticalLayout> implements BeforeEnterObserver {
-    private final RestTemplate restTemplate;
-    private final JwtUtil jwtUtil;
-    private final MessageSource messageSource;
-
+    private transient RestTemplate restTemplate;
+    private transient JwtUtil jwtUtil;
+    private transient MessageSource messageSource;
     private int notificationsCount = 0;
-
     private Button notificationsLink;
     private Grid<com.example.easybankproject.models.Notification> grid;
-    private List<com.example.easybankproject.models.Notification> notificationList;
+    private transient List<com.example.easybankproject.models.Notification> notificationList;
     private final Paragraph balanceParagraph;
-
     private final Grid<Transaction> transactionGrid;
-    private final TransactionService transactionService;
+    private transient TransactionService transactionService;
+    private String message = "message";
+    private String messageJapanese = "messageJapanese";
+    private String messageKorean = "messageKorean";
+    private String messageArabic = "messageArabic";
+    private String messageSpanish = "messageSpanish";
+    private String messageFinnish = "messageFinnish";
+    private String unauthorized = "unauthorized.no.token";
+    private String amount = "amount";
+    private String error = "error.message";
+    private String currentToken = "token";
 
-    private Image image;
 
     public MainView(JwtUtil jwtUtil, TransactionService transactionService, MessageSource messageSource) {
         this.jwtUtil = jwtUtil;
@@ -71,7 +77,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         notificationsLink = new Button(messageSource.getMessage("notifications.link", new Object[]{notificationsCount}, getLocale()));
         notificationsLink.addClickListener(event -> openNotificationsDialog());
         notificationsLink.addClassName("toggle");
-        image = new Image("./images/notification.png", messageSource.getMessage("notifications.icon.alt", null, getLocale()));
+        Image image = new Image("./images/notification.png", messageSource.getMessage("notifications.icon.alt", null, getLocale()));
         image.addClassName("notification-icon");
         notificationsLayout.add(image, notificationsLink);
         Paragraph balanceText = new Paragraph();
@@ -92,11 +98,9 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
     }
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        System.out.println("MainView beforeEnter");
-        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        String token = (String) VaadinSession.getCurrent().getAttribute(currentToken);
         String username = (String) VaadinSession.getCurrent().getAttribute("username");
-        System.out.println("Token: " + token);
-        System.out.println("Username: " + username);
+
         try {
             jwtUtil.validateToken(token, username);
             changeLanguage(getLocale());
@@ -104,26 +108,22 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         } catch (Exception e) {
             Notification.show("Unauthorized access. Please log in.");
             event.rerouteTo("login");
-            // reload ui
-            getUI().ifPresent(ui -> ui.getPage().reload());
         }
     }
 
     private void changeLanguage(Locale locale) {
         VaadinSession.getCurrent().setLocale(locale);
-        System.out.println("MAIN LOCALE: " + locale);
         initializeUIComponents();
         fetchTransactions();
     }
 
     public void fetchNotificationsCount() {
-        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        String token = (String) VaadinSession.getCurrent().getAttribute(currentToken);
         if (token == null) {
             Notification.show(messageSource.getMessage("unauthorized.no.token", null, getLocale()));
             return;
         }
 
-        RestTemplate restTemplate = new RestTemplate();
         String url = "http://localhost:8080/api/notifications/count";
 
         HttpHeaders headers = new HttpHeaders();
@@ -137,11 +137,27 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
                     entity,
                     Integer.class
             );
-            notificationsCount = response.getBody();
-            notificationsLink.setText(messageSource.getMessage("notifications.link", new Object[]{notificationsCount}, getLocale()));
-            System.out.println("Notifications count: " + notificationsCount);
+            Integer responseBody = response.getBody();
+            if (responseBody != null) {
+                notificationsCount = responseBody;
+                notificationsLink.setText(
+                        messageSource.getMessage(
+                                "notifications.link",
+                                new Object[]{notificationsCount},
+                                getLocale()
+                        )
+                );
+            } else {
+                Notification.show(
+                        messageSource.getMessage(
+                                "error.message",
+                                new Object[]{"Response body is null"},
+                                getLocale()
+                        )
+                );
+            }
         } catch (Exception e) {
-            Notification.show(messageSource.getMessage("error.message", new Object[]{e.getMessage()}, getLocale()));
+            Notification.show(messageSource.getMessage(error, new Object[]{e.getMessage()}, getLocale()));
         }
     }
 
@@ -151,9 +167,9 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         VerticalLayout dialogLayout = new VerticalLayout();
         dialog.add(dialogLayout);
 
-        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        String token = (String) VaadinSession.getCurrent().getAttribute(currentToken);
         if (token == null) {
-            Notification.show(messageSource.getMessage("unauthorized.no.token", null, getLocale()));
+            Notification.show(messageSource.getMessage(unauthorized, null, getLocale()));
             return;
         }
 
@@ -188,7 +204,6 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
     }
 
     private List<com.example.easybankproject.models.Notification> fetchNotifications(String token) {
-        RestTemplate restTemplate = new RestTemplate();
         String url = "http://localhost:8080/api/notifications";
 
         HttpHeaders headers = new HttpHeaders();
@@ -202,17 +217,16 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
                     entity,
                     com.example.easybankproject.models.Notification[].class
             );
-            List<com.example.easybankproject.models.Notification> notificationList = Arrays.asList(response.getBody());
+            notificationList = Arrays.asList(response.getBody());
             notificationList.sort((n1, n2) -> n2.getTimestamp().compareTo(n1.getTimestamp()));
             return notificationList;
         } catch (Exception e) {
-            Notification.show(messageSource.getMessage("error.message", new Object[]{e.getMessage()}, getLocale()));
-            return null;
+            Notification.show(messageSource.getMessage(error, new Object[]{e.getMessage()}, getLocale()));
+            return List.of();
         }
     }
 
     private void deleteNotification(Integer notificationId, String token) {
-        RestTemplate restTemplate = new RestTemplate();
         String deleteUrl = "http://localhost:8080/api/notifications/" + notificationId;
 
         HttpHeaders headers = new HttpHeaders();
@@ -227,13 +241,13 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             grid.setItems(notificationList);
             fetchNotificationsCount();
         } catch (Exception e) {
-            Notification.show(messageSource.getMessage("error.message", new Object[]{e.getMessage()}, getLocale()));
+            Notification.show(messageSource.getMessage(error, new Object[]{e.getMessage()}, getLocale()));
         }
     }
 
     private void fetchTransactions() {
         try {
-            String token = (String) VaadinSession.getCurrent().getAttribute("token");
+            String token = (String) VaadinSession.getCurrent().getAttribute(currentToken);
             HttpHeaders headers = createHeaders(token);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -275,12 +289,12 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         transactionGrid.addColumn(Transaction::getSenderAccountId).setHeader(messageSource.getMessage("senderAccount", null, getLocale())).setKey("senderAccountId");
         transactionGrid.addColumn(Transaction::getReceiverAccountId).setHeader(messageSource.getMessage("receiverAccount", null, getLocale())).setKey("receiverAccountId");
         transactionGrid.addColumn(Transaction::getTransactionId).setHeader(messageSource.getMessage("transactionID", null, getLocale())).setKey("transactionId");
-        transactionGrid.addColumn(Transaction::getMessage).setHeader("Message").setKey("message");
-        transactionGrid.addColumn(Transaction::getMessageJapanese).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageJapanese");
-        transactionGrid.addColumn(Transaction::getMessageKorean).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageKorean");
-        transactionGrid.addColumn(Transaction::getMessageArabic).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageArabic");
-        transactionGrid.addColumn(Transaction::getMessageSpanish).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageSpanish");
-        transactionGrid.addColumn(Transaction::getMessageFinnish).setHeader(messageSource.getMessage("message", null, getLocale())).setKey("messageFinnish");
+        transactionGrid.addColumn(Transaction::getMessage).setHeader("Message").setKey(message);
+        transactionGrid.addColumn(Transaction::getMessageJapanese).setHeader(messageSource.getMessage(message, null, getLocale())).setKey(messageJapanese);
+        transactionGrid.addColumn(Transaction::getMessageKorean).setHeader(messageSource.getMessage(message, null, getLocale())).setKey(messageKorean);
+        transactionGrid.addColumn(Transaction::getMessageArabic).setHeader(messageSource.getMessage(message, null, getLocale())).setKey(messageArabic);
+        transactionGrid.addColumn(Transaction::getMessageSpanish).setHeader(messageSource.getMessage(message, null, getLocale())).setKey(messageSpanish);
+        transactionGrid.addColumn(Transaction::getMessageFinnish).setHeader(messageSource.getMessage(message, null, getLocale())).setKey(messageFinnish);
     }
 
     private void removeLocaleSpecificColumns() {
@@ -288,17 +302,17 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         String language = locale.getLanguage();
 
         if (language.equals("ja")) {
-            removeColumns("messageArabic", "messageKorean", "messageSpanish", "messageFinnish", "message");
+            removeColumns(messageArabic, messageKorean, messageSpanish, messageFinnish, message);
         } else if (language.equals("ko")) {
-            removeColumns("messageArabic", "messageJapanese", "messageSpanish", "messageFinnish", "message");
+            removeColumns(messageArabic, messageJapanese, messageSpanish, messageFinnish, message);
         } else if (language.equals("ar")) {
-            removeColumns("messageJapanese", "messageKorean", "messageSpanish", "messageFinnish", "message");
+            removeColumns(messageJapanese, messageKorean, messageSpanish, messageFinnish, message);
         } else if (language.equals("es")) {
-            removeColumns("messageJapanese", "messageKorean", "messageArabic", "messageFinnish", "message");
+            removeColumns(messageJapanese, messageKorean, messageArabic, messageFinnish, message);
         } else if (language.equals("fi")) {
-            removeColumns("messageJapanese", "messageKorean", "messageArabic", "messageSpanish", "message");
+            removeColumns(messageJapanese, messageKorean, messageArabic, messageSpanish, message);
         } else {
-            removeColumns("messageArabic", "messageJapanese", "messageKorean", "messageSpanish", "messageFinnish");
+            removeColumns(messageArabic, messageJapanese, messageKorean, messageSpanish, messageFinnish);
         }
     }
 
@@ -309,8 +323,8 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
     }
 
     private void addAmountColumn(String token) {
-        removeColumnIfExists("amount");
-        if (transactionGrid.getColumnByKey("amount") == null) {
+        removeColumnIfExists(amount);
+        if (transactionGrid.getColumnByKey(amount) == null) {
             transactionGrid.addColumn(new ComponentRenderer<>(transaction -> {
                 Div container = new Div();
                 container.getStyle().set("padding", "10px");
@@ -328,7 +342,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
                 container.setText(amountPrefix + transaction.getAmount() + " €");
                 return container;
-            })).setHeader(messageSource.getMessage("amount.header", null, getLocale())).setKey("amount");
+            })).setHeader(messageSource.getMessage("amount.header", null, getLocale())).setKey(amount);
         }
     }
 
@@ -343,10 +357,10 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     private void fetchBalance() {
         String url = "http://localhost:8080/api/bankaccount/balance";
-        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        String token = (String) VaadinSession.getCurrent().getAttribute(currentToken);
 
         if (token == null) {
-            getContent().add(new Div(messageSource.getMessage("unauthorized.no.token", null, getLocale())));
+            getContent().add(new Div(messageSource.getMessage(unauthorized, null, getLocale())));
             return;
         }
         HttpHeaders headers = new HttpHeaders();
@@ -355,11 +369,14 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
         try {
             BankAccount bankAccount = restTemplate.exchange(url, HttpMethod.GET, request, BankAccount.class).getBody();
-
+            if (bankAccount == null) {
+                Notification.show(messageSource.getMessage(error, new Object[]{"Bank account not found"}, getLocale()));
+                return;
+            }
             double balance = bankAccount.getBalance().doubleValue();
             balanceParagraph.setText("" + balance + " €");
         } catch (Exception e) {
-            Notification.show(messageSource.getMessage("error.message", new Object[]{e.getMessage()}, getLocale()));
+            Notification.show(messageSource.getMessage(error, new Object[]{e.getMessage()}, getLocale()));
         }
     }
 
@@ -372,15 +389,16 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         TextField receiverField = new TextField(messageSource.getMessage("receiver.label", null, getLocale()));
         TextField messageField = new TextField(messageSource.getMessage("message.label", null, getLocale()));
         H2 title = new H2(messageSource.getMessage("transaction.new.title", null, getLocale()));
-        amountField.addClassName("field");
-        receiverField.addClassName("field");
-        messageField.addClassName("field");
+        String field = "field";
+        amountField.addClassName(field);
+        receiverField.addClassName(field);
+        messageField.addClassName(field);
 
         Button submitButton = new Button(messageSource.getMessage("submit.button", null, getLocale()), event -> {
-            double amount = amountField.getValue();
+            double amountValue = amountField.getValue();
             int receiver = Integer.parseInt(receiverField.getValue());
-            String message = messageField.getValue();
-            transaction(amount, receiver, message);
+            String messageValue  = messageField.getValue();
+            transaction(amountValue, receiver, messageValue);
             dialog.close();
         });
 
@@ -397,9 +415,9 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
 
     private void transaction(double amount, int receiver, String message) {
         String url = "http://localhost:8080/api/transaction/create";
-        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        String token = (String) VaadinSession.getCurrent().getAttribute(currentToken);
         if (token == null) {
-            Notification.show(messageSource.getMessage("unauthorized.no.token", null, getLocale()));
+            Notification.show(messageSource.getMessage(unauthorized, null, getLocale()));
             return;
         }
         int sender = transactionService.getSenderId(token);
@@ -407,7 +425,6 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
         String messageField = getMessageFieldForLocale(getLocale());
         String jsonPayload = String.format("{\"amount\":\"%s\",\"receiverAccountId\":\"%s\",\"%s\":\"%s\",\"senderAccountId\":\"%s\"}",
                 amount, receiver, messageField, message, sender);
-        System.out.println("TransactionInfo: " + jsonPayload);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -425,24 +442,24 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
             fetchBalance();
             fetchNotificationsCount();
         } catch (Exception e) {
-            Notification.show(messageSource.getMessage("error.message", new Object[]{e.getMessage()}, getLocale()));
+            Notification.show(messageSource.getMessage(error, new Object[]{e.getMessage()}, getLocale()));
         }
     }
 
     private String getMessageFieldForLocale(Locale locale) {
         switch (locale.getLanguage()) {
             case "ja":
-                return "messageJapanese";
+                return messageJapanese;
             case "ko":
-                return "messageKorean";
+                return messageKorean;
             case "ar":
-                return "messageArabic";
+                return messageArabic;
             case "es":
-                return "messageSpanish";
+                return messageSpanish;
             case "fi":
-                return "messageFinnish";
+                return messageFinnish;
             default:
-                return "message";
+                return message;
         }
     }
 }

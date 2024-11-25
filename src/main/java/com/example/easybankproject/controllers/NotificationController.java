@@ -70,11 +70,15 @@ import java.util.List;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    @Autowired
     private NotificationService notificationService;
 
-    @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    public NotificationController(NotificationService notificationService, JwtUtil jwtUtil) {
+        this.notificationService = notificationService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @GetMapping
     public ResponseEntity<List<Notification>> getUserNotifications(@RequestHeader("Authorization") String token) {

@@ -2,7 +2,6 @@
 
 package com.example.easybankproject.ui;
 
-import com.example.easybankproject.utils.JwtUtil;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -19,8 +18,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
-import io.jsonwebtoken.MalformedJwtException;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -33,29 +30,25 @@ import java.util.Locale;
 @RouteAlias(value = "")
 @CssImport("./styles/register.css")
 public class RegisterationView extends Composite<VerticalLayout> {
-    private final RestTemplate restTemplate;
-    private final MessageSource messageSource;
+    private transient RestTemplate restTemplate;
+    private transient MessageSource messageSource;
 
     public RegisterationView(MessageSource messageSource) {
         this.restTemplate = new RestTemplate();
         this.messageSource = messageSource;
-        Locale currentLocale = VaadinSession.getCurrent().getLocale();
-        System.out.println("Current Locale: " + currentLocale);
-        System.out.println(LocaleContextHolder.getLocale());
 
-        // Language flags
         Image englishFlag = new Image("images/united-kingdom.png", "English");
-        englishFlag.addClickListener(event -> changeLanguage(new Locale("en")));
+        englishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("en")));
         Image koreanFlag = new Image("images/south-korea.png", "Korean");
-        koreanFlag.addClickListener(event -> changeLanguage(new Locale("ko")));
+        koreanFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ko")));
         Image arabicFlag = new Image("images/arabic.png", "Arabic");
-        arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
+        arabicFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ar")));
         Image finnishFlag = new Image("images/finland.png", "Finnish");
-        finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
+        finnishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("fi")));
         Image spanishFlag = new Image("images/spanish.png", "Spanish");
-        spanishFlag.addClickListener(event -> changeLanguage(new Locale("es")));
+        spanishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("es")));
         Image japaneseFlag = new Image("images/japan.png", "Japanese");
-        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
+        japaneseFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ja")));
 
         englishFlag.setHeight("30px");
         englishFlag.setWidth("30px");
@@ -79,13 +72,14 @@ public class RegisterationView extends Composite<VerticalLayout> {
         TextField address = new TextField(messageSource.getMessage("address.label", null, getLocale()));
         PasswordField passwordField = new PasswordField(messageSource.getMessage("password.label", null, getLocale()));
 
-        username.addClassName("field");
-        firstname.addClassName("field");
-        lastname.addClassName("field");
-        emailField.addClassName("field");
-        phonenumber.addClassName("field");
-        address.addClassName("field");
-        passwordField.addClassName("field");
+        String field = "field";
+        username.addClassName(field);
+        firstname.addClassName(field);
+        lastname.addClassName(field);
+        emailField.addClassName(field);
+        phonenumber.addClassName(field);
+        address.addClassName(field);
+        passwordField.addClassName(field);
 
         H2 h2 = new H2();
         h2.setText(messageSource.getMessage("welcome.message", null, getLocale()));
@@ -143,10 +137,8 @@ public class RegisterationView extends Composite<VerticalLayout> {
                Notification.show(messageSource.getMessage("error.empty.fields", null, locale));
                return;
            }
-           System.out.println(jsonPayload);
            String token = restTemplate.postForObject(url, request, String.class);
 
-           System.out.println("Token: " + token);
            Notification.show(token);
 
            VaadinSession.getCurrent().setAttribute("token", token);

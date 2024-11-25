@@ -25,16 +25,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 import com.vaadin.flow.router.BeforeEnterObserver;
 
-import java.util.Locale;
 
 @PageTitle("Profile")
 @CssImport("./styles/profileview.css")
 @Route(value = "profile", layout = MainLayout.class)
 public class ProfileView extends Composite<VerticalLayout> implements BeforeEnterObserver {
 
-    private final JwtUtil jwtUtil;
-    private final RestTemplate restTemplate;
-    private final MessageSource messageSource;
+    private transient JwtUtil jwtUtil;
+    private transient RestTemplate restTemplate;
+    private transient MessageSource messageSource;
 
     public ProfileView(JwtUtil jwtUtil, MessageSource messageSource) {
         this.restTemplate = new RestTemplate();
@@ -125,11 +124,11 @@ public class ProfileView extends Composite<VerticalLayout> implements BeforeEnte
         TextField phoneField = new TextField(messageSource.getMessage("phonenumber.label", null, getLocale()), String.valueOf(user.getPhonenumber()), "");
         TextField firstNameField = new TextField(messageSource.getMessage("firstname.label", null, getLocale()), user.getFirstname(), "");
         TextField lastNameField = new TextField(messageSource.getMessage("lastname.label", null, getLocale()), user.getLastname(), "");
-        emailField.addClassName("field");
-        addressField.addClassName("field");
-        phoneField.addClassName("field");
-        firstNameField.addClassName("field");
-        lastNameField.addClassName("field");
+        String field = "field";
+        addressField.addClassName(field);
+        phoneField.addClassName(field);
+        firstNameField.addClassName(field);
+        lastNameField.addClassName(field);
 
         HorizontalLayout buttonsLayout = new HorizontalLayout();
 

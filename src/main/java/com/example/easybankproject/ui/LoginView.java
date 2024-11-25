@@ -100,7 +100,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.context.MessageSource;
@@ -113,14 +112,14 @@ import java.util.Locale;
 @CssImport("./styles/mainlayout.css")
 public class LoginView extends VerticalLayout {
 
-    private final MessageSource messageSource;
-    private final RestTemplate restTemplate;
+    private transient MessageSource messageSource;
+    private transient RestTemplate restTemplate;
 
-    public TextField usernameField;
+    TextField usernameField;
 
-    public PasswordField passwordField;
+    PasswordField passwordField;
 
-    public Button loginButton;
+    Button loginButton;
 
 
     public LoginView(MessageSource messageSource) {
@@ -130,17 +129,17 @@ public class LoginView extends VerticalLayout {
 
         // Language flags
         Image englishFlag = new Image("images/united-kingdom.png", "English");
-        englishFlag.addClickListener(event -> changeLanguage(new Locale("en")));
+        englishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("en")));
         Image koreanFlag = new Image("images/south-korea.png", "Korean");
-        koreanFlag.addClickListener(event -> changeLanguage(new Locale("ko")));
+        koreanFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ko")));
         Image arabicFlag = new Image("images/arabic.png", "Arabic");
-        arabicFlag.addClickListener(event -> changeLanguage(new Locale("ar")));
+        arabicFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ar")));
         Image finnishFlag = new Image("images/finland.png", "Finnish");
-        finnishFlag.addClickListener(event -> changeLanguage(new Locale("fi")));
+        finnishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("fi")));
         Image spanishFlag = new Image("images/spanish.png", "Spanish");
-        spanishFlag.addClickListener(event -> changeLanguage(new Locale("es")));
+        spanishFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("es")));
         Image japaneseFlag = new Image("images/japan.png", "Japanese");
-        japaneseFlag.addClickListener(event -> changeLanguage(new Locale("ja")));
+        japaneseFlag.addClickListener(event -> changeLanguage(Locale.forLanguageTag("ja")));
 
         englishFlag.setHeight("30px");
         englishFlag.setWidth("30px");
@@ -211,7 +210,7 @@ public class LoginView extends VerticalLayout {
                 return;
             }
             ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-            System.out.println("Response: " + response);
+
             if (response.getStatusCode() == HttpStatus.OK) {
                 String token = response.getBody();
                 VaadinSession session = VaadinSession.getCurrent();
