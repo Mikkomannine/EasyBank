@@ -1,5 +1,4 @@
 
-
 package com.example.easybankproject.ui;
 
 import com.example.easybankproject.models.BankAccount;

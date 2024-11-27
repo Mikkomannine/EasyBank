@@ -14,10 +14,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/**").permitAll() // Allow access to all required paths
-                                .anyRequest().authenticated() // Require authentication for all other requests
+                                .requestMatchers("/**").permitAll()
+                                .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()); // Disable CSRF for simplicity; enable it as needed
+                .csrf(csrf -> csrf.disable());
 
         return http.build();
     }
