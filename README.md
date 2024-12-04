@@ -30,7 +30,7 @@ ____
 - Vaadin
 ____
 # Documentation
-For more detailed ER and UML diagrams, please visit the [documentation](./src/documentation) directory.
+For more detailed documentation, please visit the [documentation](./src/documentation) directory.
 ____
 # Images
 images are located in `src/main/resources/META-INF/resources/images`
