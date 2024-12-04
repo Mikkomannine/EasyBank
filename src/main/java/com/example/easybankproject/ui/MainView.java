@@ -373,7 +373,7 @@ public class MainView extends Composite<VerticalLayout> implements BeforeEnterOb
                 return;
             }
             double balance = bankAccount.getBalance().doubleValue();
-            balanceParagraph.setText("" + balance + " €");
+            balanceParagraph.setText(String.format("%.2f €", balance));
         } catch (Exception e) {
             Notification.show(messageSource.getMessage(error, new Object[]{e.getMessage()}, getLocale()));
         }
